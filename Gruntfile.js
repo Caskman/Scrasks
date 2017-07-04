@@ -1,7 +1,8 @@
 module.exports = function(grunt) {
 
-    grunt.loadNpmTasks('grunt-screeps');
+    grunt.loadNpmTasks('grunt-screeps')
     grunt.loadNpmTasks('grunt-babel')
+    grunt.loadNpmTasks('grunt-contrib-clean')
 
     var credentials = grunt.file.readJSON('private.json')
 
@@ -16,6 +17,9 @@ module.exports = function(grunt) {
             options: {
                 plugins: [
                     'transform-es2015-modules-commonjs'
+                ],
+                presets: [
+                    'babel-preset-flow'
                 ]
             },
             dist: {
@@ -29,7 +33,11 @@ module.exports = function(grunt) {
                 ]
             }
         },
+        clean: [
+            'dist'
+        ]
     })
+
 
     // grunt.registerTask('test', 'test some stuff', () => {
     //     grunt.log.write("whattup\n").ok()
