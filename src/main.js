@@ -1,5 +1,5 @@
 
-module.exports.loop = function() {
+export function loop() {
     console.log('sup')
     let o = {
         a: 1,
