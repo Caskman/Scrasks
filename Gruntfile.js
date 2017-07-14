@@ -48,8 +48,8 @@ module.exports = function(grunt) {
         },
         exec: {
             flow: {
-                cmd: 'flow'
-            }
+                cmd: 'flow',
+            },
         },
     })
 
