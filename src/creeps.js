@@ -1,9 +1,7 @@
 //@flow
-const Game = require('./cask-screeps').Game
-const Memory = require('./cask-screeps').Memory
+import { Game, Memory } from './cask-screeps'
 
-exports.spawnCreeps = function() {
+export const spawnCreeps = function() {
     return Game.spawns["Spawn1"].createCreep(['WORK','MOVE','CARRY'])
-    // return true
 }
 

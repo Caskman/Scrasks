@@ -1,12 +1,10 @@
-// var mock = require('mock-require')
 var assert = require('assert')
 var mock = require('mock-require')
-var mockCaskScreeps = require('./cask-screeps')
+var mockCaskScreeps = require('./mock-cask-screeps')
 
 mock('../cask-screeps', mockCaskScreeps)
 
 var creeps = require('../creeps')
-
 
 describe('Something', function() {
     it('should do something good and well', function() {

@@ -10,29 +10,29 @@ module.exports = function(grunt) {
         screeps: {
             options: credentials,
             dist: {
-                src: ['dist/*.js']
-            }
+                src: ['dist/*.js'],
+            },
         },
         babel: {
             options: {
                 presets: [
-                    'babel-preset-flow'
-                ]
+                    'babel-preset-flow',
+                ],
             },
             dist: {
                 files: [
                     {
                         expand: true,
                         cwd: 'src/',
-                        src: ['**/*.js'],
-                        dest: 'dist/'
-                    }
-                ]
-            }
+                        src: ['*.js'],
+                        dest: 'dist/',
+                    },
+                ],
+            },
         },
         clean: [
-            'dist'
-        ]
+            'dist',
+        ],
     })
 
 
