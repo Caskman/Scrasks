@@ -1,17 +1,21 @@
 
 // Global Objects
 
-declare var Game: {
+declare type GameType = {
     spawns: { [string]: StructureSpawn},
     creeps: { [string]: Creep},
 }
 
-declare var Memory: {
+declare var Game: GameType
+
+declare type MemoryType = {
     spawns: { [string]: StructureSpawn },
     creeps: { [string]: Creep },
     rooms: { [string]: Room },
     flags: { [string]: Flag },
 }
+
+declare var Memory: MemoryType
 
 // Types
 
