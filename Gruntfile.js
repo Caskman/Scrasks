@@ -45,7 +45,6 @@ module.exports = function(grunt) {
                 dest: 'dist/test/',    // destination folder
                 expand: true,           // required when using cwd
             },
-            // require: ['copy'],
         },
         exec: {
             flow: {
@@ -60,10 +59,4 @@ module.exports = function(grunt) {
         ['exec','clean', 'babel', 'copy']
     )
 
-    // grunt.registerTask('test', 'test some stuff', () => {
-    //     grunt.log.write("whattup\n").ok()
-    // })
-
-    // grunt.registerTask('default', ['screeps'])
-    // grunt.registerTask('babel', ['babel'])
 }
