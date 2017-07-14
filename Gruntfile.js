@@ -15,6 +15,9 @@ module.exports = function(grunt) {
         },
         babel: {
             options: {
+                plugins: [
+                    'transform-es2015-modules-commonjs',
+                ],
                 presets: [
                     'babel-preset-flow',
                 ],
