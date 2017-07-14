@@ -1,8 +1,8 @@
 //@flow
-import { spawnCreeps } from './creeps'
-import { cleanMemory } from './utils'
+const spawnCreeps = require('./creeps')
+const cleanMemory = require('./utils')
 
-export function loop() {
+exports.loop = function() {
 
     cleanMemory()
     spawnCreeps()

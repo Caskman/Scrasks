@@ -15,9 +15,6 @@ module.exports = function(grunt) {
         },
         babel: {
             options: {
-                plugins: [
-                    'transform-es2015-modules-commonjs'
-                ],
                 presets: [
                     'babel-preset-flow'
                 ]
@@ -27,7 +24,7 @@ module.exports = function(grunt) {
                     {
                         expand: true,
                         cwd: 'src/',
-                        src: ['*.js'],
+                        src: ['**/*.js'],
                         dest: 'dist/'
                     }
                 ]

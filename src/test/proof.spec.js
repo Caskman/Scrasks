@@ -1,6 +1,12 @@
 // var mock = require('mock-require')
 var assert = require('assert')
-var creeps = require('src/creeps')
+var mock = require('mock-require')
+var mockCaskScreeps = require('./cask-screeps')
+
+mock('../cask-screeps', mockCaskScreeps)
+
+var creeps = require('../creeps')
+
 
 describe('Something', function() {
     it('should do something good and well', function() {
@@ -8,8 +14,8 @@ describe('Something', function() {
     })
 
     it('should verify that my api works', function() {
-        creeps
-    }
+        assert.equal(creeps.spawnCreeps(), 5)
+    })
 })
 
 

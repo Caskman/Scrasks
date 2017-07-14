@@ -3,13 +3,13 @@
 
 // Global Objects
 
-declare var Game: {
+declare type Game = {
     spawns: { [string]: StructureSpawn},
     creeps: { [string]: Creep},
 
 }
 
-declare var Memory: {
+declare type Memory = {
     spawns: { [string]: StructureSpawn },
     creeps: { [string]: Creep },
     rooms: { [string]: Room },
@@ -62,6 +62,5 @@ declare type StructureSpawn = {
     ...Structure,
     energy: number,
 }
-
 
 export { Game, Memory }
