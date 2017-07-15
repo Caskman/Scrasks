@@ -3,6 +3,7 @@
 const GameMM: GameType = {
     creeps: Game.creeps,
     spawns: Game.spawns,
+    rooms: Game.rooms,
 }
 const MemoryMM: MemoryType = {
     spawns: Memory.spawns,

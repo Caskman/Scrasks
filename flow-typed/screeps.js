@@ -2,8 +2,9 @@
 // Global Objects
 
 declare type GameType = {
-    spawns: { [string]: StructureSpawn},
-    creeps: { [string]: Creep},
+    spawns: { [string]: StructureSpawn },
+    creeps: { [string]: Creep },
+    rooms: { [string]: Room }
 }
 
 declare var Game: GameType
@@ -40,12 +41,23 @@ declare type RoomPosition = {
 }
 
 declare type Room = {
-
+    controller: StructureController,
+    energyAvailable: number,
+    memory: any,
+    mode: string,
+    name: string,
+    storage: StructureStorage,
+    terminal: StructureTerminal,
+    visual: RoomVisual,
 }
 
 declare type RoomObject = {
     pos: RoomPosition,
     room: Room,
+}
+
+declare type RoomVisual = {
+
 }
 
 declare type Source = {
@@ -57,10 +69,22 @@ declare type Structure = {
 
 }
 
+declare type StructureController = {
+
+}
+
 declare type StructureSpawn = {
     ...OwnedStructure,
     ...RoomObject,
     ...Structure,
     energy: number,
     createCreep(body: string[], name?: string, memory: mixed): number,
+}
+
+declare type StructureStorage = {
+
+}
+
+declare type StructureTerminal = {
+
 }
