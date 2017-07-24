@@ -59,4 +59,10 @@ module.exports = function(grunt) {
         ['exec','clean', 'babel', 'copy']
     )
 
+    grunt.registerTask(
+        'deploy',
+        'task to run flow, clean, babel, copy, and then deploy to screeps',
+        ['default', 'screeps']
+    )
+
 }

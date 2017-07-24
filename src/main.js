@@ -1,17 +1,25 @@
 //@flow
-import { cleanMemory } from './utils'
-import { Game, Memory } from './cask-screeps'
-import { manageRoom } from './rooms'
 import _ from 'lodash'
+import { cleanMemory } from './utils'
+import { manageRoom } from './rooms'
+import { manageCreeps } from './creeps'
 
 export const loop = function() {
 
     cleanMemory()
+
+    categorize()
     // spawnCreeps()
 
     _.each(Game.rooms, room => manageRoom(room))
+    manageCreeps()
+
     // console.log(Game.spawns['Spawn1'].energy)
 
 
+
+}
+
+function categorize() {
 
 }
