@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha -- dist/test/*.spec.js",
-    "watch": "flow-watch"
+    "watch": "flow-watch",
+    "deploy": "grunt screeps"
   },
   "author": "",
   "license": "ISC",
