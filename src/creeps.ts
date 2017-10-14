@@ -1,6 +1,6 @@
 import * as _ from 'lodash'
 
-import * as cu from './creep-utils'
+import * as ut from './utils'
 import * as consts from './constants'
 
 import { spawnHarvesters, runHarvester } from './harvester'
@@ -18,7 +18,7 @@ export function manageCreeps(room: Room) {
 }
 
 function runCreeps(room: Room) {
-    _.each(cu.getRoomCreeps(room), c => {
+    _.each(ut.getRoomCreeps(room), c => {
         if (c.memory.role == consts.HARVESTER_ROLE) {
             runHarvester(c)
         } else if (c.memory.role == consts.UPGRADER_ROLE) {

@@ -1,14 +1,14 @@
 import * as _ from 'lodash'
-import * as cu from './creep-utils'
+import * as ut from './utils'
 import * as consts from './constants'
 
 const HARVESTER_BODY = [MOVE,WORK,CARRY]
 const HARVESTERS_PER_SOURCE = 1
 
 export function runHarvester(c: Creep) {
-    if (c.memory.harvesting && cu.atFullEnergy(c)) {
+    if (c.memory.harvesting && ut.atFullEnergy(c)) {
         c.memory.harvesting = false
-    } else if (!c.memory.harvesting && cu.atEmptyEnergy(c)) {
+    } else if (!c.memory.harvesting && ut.atEmptyEnergy(c)) {
         c.memory.harvesting = true
     }
 
@@ -47,7 +47,7 @@ export function runHarvester(c: Creep) {
                     c.room.createConstructionSite(location, STRUCTURE_CONTAINER)
                 } else {
                     // conditions not met, store at spawn
-                    moveAndTransfer(c, cu.getRoomMainSpawn(c.room))
+                    moveAndTransfer(c, ut.getRoomMainSpawn(c.room))
                 }
             }
         } else {
@@ -61,18 +61,18 @@ export function runHarvester(c: Creep) {
 function allSourcesHaveHarvesters(room: Room) {
     const sources = room.find(FIND_SOURCES) as Source[]
     const sourceIDs = sources.map(s => s.id)
-    const harvesters = cu.getRoomRoleCreeps(room, consts.HARVESTER_ROLE)
+    const harvesters = ut.getRoomRoleCreeps(room, consts.HARVESTER_ROLE)
     const remainingSourceIDs = _.difference(sourceIDs, harvesters.map(h => h.memory.sourceID))
     return remainingSourceIDs.length == 0
 }
 
 function spawnIsFull(room: Room) {
-    const spawn = cu.getRoomMainSpawn(room)
+    const spawn = ut.getRoomMainSpawn(room)
     return spawn.energy == spawn.energyCapacity
 }
 
 function pickContainerLocation(source: Source) {
-    const spawn = cu.getRoomMainSpawn(source.room)
+    const spawn = ut.getRoomMainSpawn(source.room)
     const room = spawn.room
     const sPos = source.pos
 
@@ -94,14 +94,14 @@ function moveAndTransfer(c: Creep, dest: Structure) {
 }
 
 export function spawnHarvesters(room: Room) {
-    const spawn = cu.getRoomMainSpawn(room)
-    if (cu.canSpawnBody(spawn, HARVESTER_BODY)) {
+    const spawn = ut.getRoomMainSpawn(room)
+    if (ut.canSpawnBody(spawn, HARVESTER_BODY)) {
         type SourceObj = {
             sourceID: string,
             creeps: Creep[]
         }
 
-        const harvesters = _.filter(cu.getRoomCreeps(room), c => c.memory.role == consts.HARVESTER_ROLE)
+        const harvesters = _.filter(ut.getRoomCreeps(room), c => c.memory.role == consts.HARVESTER_ROLE)
         const sources: Source[] = room.find(FIND_SOURCES)
         const sourceObjs: SourceObj[] = sources.map(s => {
             return {
@@ -119,7 +119,7 @@ export function spawnHarvesters(room: Room) {
         const underStaffedSources = _.filter(sourceObjs, so => so.creeps.length < HARVESTERS_PER_SOURCE)
         if (underStaffedSources.length > 0) {
             const sourceID = _.map(underStaffedSources, so => so.sourceID)[0]
-            spawn.spawnCreep(HARVESTER_BODY, cu.newName(consts.HARVESTER_ROLE), {
+            spawn.spawnCreep(HARVESTER_BODY, ut.newName(consts.HARVESTER_ROLE), {
                 memory: {
                     role: consts.HARVESTER_ROLE,
                     sourceID,

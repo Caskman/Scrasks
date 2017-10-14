@@ -1,14 +1,14 @@
 import * as _ from 'lodash'
-import * as cu from './creep-utils'
+import * as ut from './utils'
 import * as consts from './constants'
 
 const UPGRADER_BODY = [MOVE,WORK,CARRY]
 const UPGRADERS_PER_CONTROLLER = 1
 
 export function runUpgrader(c: Creep) {
-    if (c.memory.upgrading && cu.atEmptyEnergy(c)) {
+    if (c.memory.upgrading && ut.atEmptyEnergy(c)) {
         c.memory.upgrading = false
-    } else if (!c.memory.upgrading && cu.atFullEnergy(c)) {
+    } else if (!c.memory.upgrading && ut.atFullEnergy(c)) {
         c.memory.upgrading = true
     }
 
@@ -30,10 +30,10 @@ export function runUpgrader(c: Creep) {
 }
 
 export function spawnUpgraders(room: Room) {
-    const spawn = cu.getRoomMainSpawn(room)
-    const upgraders = _.filter(cu.getRoomCreeps(room), c => c.memory.role == consts.UPGRADER_ROLE)
-    if (upgraders.length < UPGRADERS_PER_CONTROLLER && cu.canSpawnBody(spawn, UPGRADER_BODY)) {
-        spawn.spawnCreep(UPGRADER_BODY, cu.newName(consts.UPGRADER_ROLE), {memory: {
+    const spawn = ut.getRoomMainSpawn(room)
+    const upgraders = _.filter(ut.getRoomCreeps(room), c => c.memory.role == consts.UPGRADER_ROLE)
+    if (upgraders.length < UPGRADERS_PER_CONTROLLER && ut.canSpawnBody(spawn, UPGRADER_BODY)) {
+        spawn.spawnCreep(UPGRADER_BODY, ut.newName(consts.UPGRADER_ROLE), {memory: {
             role: consts.UPGRADER_ROLE,
         }})
     }
