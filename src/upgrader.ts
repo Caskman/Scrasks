@@ -3,7 +3,7 @@ import * as ut from './utils'
 import * as consts from './constants'
 
 const UPGRADER_BODY = [MOVE,WORK,CARRY]
-const UPGRADERS_PER_CONTROLLER = 1
+const UPGRADERS_PER_CONTROLLER = 2
 
 export function runUpgrader(c: Creep) {
     if (c.memory.upgrading && ut.atEmptyEnergy(c)) {
