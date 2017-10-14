@@ -3,7 +3,7 @@ import * as _ from 'lodash'
 const HARVESTER_ROLE = "HARVESTER"
 const HARVESTER_BODY = [MOVE,WORK,CARRY]
 
-const UPGRADER_ROLE = "HARVESTER"
+const UPGRADER_ROLE = "UPGRADER"
 const UPGRADER_BODY = [MOVE,WORK,CARRY]
 
 
@@ -22,14 +22,16 @@ function runCreeps(room: Room) {
     _.each(getRoomCreeps(room), c => {
         if (c.memory.role == HARVESTER_ROLE) {
             runHarvester(c)
+        } else if (c.memory.role == UPGRADER_ROLE) {
+            runUpgrader(c)
         }
     })
 }
 
 function runHarvester(c: Creep) {
-    if (c.memory["hauling"] && c.carry.energy == 0) {
+    if (c.memory["hauling"] && atEmptyEnergy(c)) {
         c.memory["hauling"] = false
-    } else if (!c.memory["hauling"] && c.carry.energy == c.carryCapacity) {
+    } else if (!c.memory["hauling"] && atFullEnergy(c)) {
         c.memory["hauling"] = true
     }
 
@@ -43,6 +45,30 @@ function runHarvester(c: Creep) {
         const code = c.harvest(source)
         if (code == ERR_NOT_IN_RANGE) {
             c.moveTo(source)
+        }
+    }
+}
+
+function runUpgrader(c: Creep) {
+    if (c.memory.upgrading && atEmptyEnergy(c)) {
+        c.memory.upgrading = false
+    } else if (!c.memory.upgrading && atFullEnergy(c)) {
+        c.memory.upgrading = true
+    }
+
+    if (c.memory.upgrading) {
+        const controller = c.room.controller
+        if (c.upgradeController(controller) == ERR_NOT_IN_RANGE) {
+            c.moveTo(controller)
+        }
+    } else {
+        const source: Source = c.pos.findClosestByRange(FIND_SOURCES_ACTIVE)
+        if (source) {
+            if (c.harvest(source) == ERR_NOT_IN_RANGE) {
+                c.moveTo(source)
+            }
+        } else {
+            throw new Error("why no sources for controller?")
         }
     }
 }
@@ -91,7 +117,6 @@ function spawnUpgraders(room: Room) {
     if (upgraders.length < 1 && canSpawnBody(spawn, UPGRADER_BODY)) {
         spawn.spawnCreep(UPGRADER_BODY, newName(UPGRADER_ROLE), {memory: {
             role: UPGRADER_ROLE,
-            
         }})
     }
 }
@@ -113,4 +138,12 @@ function getRoomMainSpawn(room: Room) {
 function getRoomCreeps(room: Room) {
     const creeps: Creep[] = room.find(FIND_MY_CREEPS)
     return creeps
+}
+
+function atEmptyEnergy(c: Creep) {
+    return c.carry.energy == 0
+}
+
+function atFullEnergy(c: Creep) {
+    return c.carry.energy == c.carryCapacity
 }
