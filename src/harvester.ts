@@ -51,10 +51,7 @@ export function runHarvester(c: Creep) {
 
     if (c.memory.harvesting) {
         const source: Source = Game.getObjectById(c.memory.sourceID)
-        const code = c.harvest(source)
-        if (code == ERR_NOT_IN_RANGE) {
-            c.moveTo(source)
-        }
+        ut.moveAndHarvest(c, source)
     } else {
         // find a place to store energy
 
@@ -69,7 +66,7 @@ export function runHarvester(c: Creep) {
                 // yes, let's do container construction
 
                 // are we building one currently
-                const containerConstructionSites = getContainerConstructionSites(source)
+                const containerConstructionSites = ut.getSourceContainerConstructionSites(source)
                 if (containerConstructionSites.length > 0) {
                     // yep we're building one, work on it
                     const location = containerConstructionSites[0]
@@ -106,13 +103,6 @@ function storeEnergyAtBase(c: Creep) {
     } else {
         storeAtSpawn(c)
     }
-}
-
-function getContainerConstructionSites(source: Source) {
-    const constructionLocations = source.pos.findInRange(FIND_CONSTRUCTION_SITES,2) as ConstructionSite[]
-    const containerConstructionLocations = 
-        constructionLocations.filter(cl => cl.structureType == STRUCTURE_CONTAINER)
-    return containerConstructionLocations
 }
 
 function storeAtSpawn(c: Creep) {

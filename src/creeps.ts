@@ -5,6 +5,7 @@ import * as consts from './constants'
 
 import { spawnHarvesters, runHarvester } from './harvester'
 import { spawnUpgraders, runUpgrader } from './upgrader'
+import { spawnHaulers, runHauler } from './hauler'
 
 export function manageCreeps(room: Room) {
 
@@ -13,6 +14,7 @@ export function manageCreeps(room: Room) {
 
     spawnHarvesters(room)
     spawnUpgraders(room)
+    spawnHaulers(room)
 
     runCreeps(room)
 }
@@ -23,6 +25,8 @@ function runCreeps(room: Room) {
             runHarvester(c)
         } else if (c.memory.role == consts.UPGRADER_ROLE) {
             runUpgrader(c)
+        } else if (c.memory.role == consts.HAULER_ROLE) {
+            runHauler(c)
         }
     })
 }
