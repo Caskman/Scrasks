@@ -3,8 +3,6 @@ import * as ut from './utils'
 import * as consts from './constants'
 
 const HAULER_BODY = [MOVE,WORK,CARRY]
-const HAULERS_PER_COLLECT_TARGET = 1
-const HAULERS_PER_TRANSPORT_TARGET = 2
 
 export function runHauler(c: Creep) {
     if (c.memory.hauling && ut.atEmptyEnergy(c)) {
@@ -84,7 +82,7 @@ export function runHauler(c: Creep) {
     }
 }
 
-export function spawnHaulers(room: Room) {
+export function spawnHaulers(room: Room): number {
     const spawn = ut.getRoomMainSpawn(room)
     if (ut.canSpawnBody(spawn, HAULER_BODY)) {
         const sources = room.find(FIND_SOURCES) as Source[]
@@ -113,11 +111,11 @@ export function spawnHaulers(room: Room) {
             job.creeps.push(h)
         })
     
-        const underStaffedJobs = jobs.filter(j => j.creeps.length < HAULERS_PER_COLLECT_TARGET)
+        const underStaffedJobs = jobs.filter(j => j.creeps.length < consts.HAULERS_PER_COLLECT_TARGET)
 
         if (underStaffedJobs.length > 0) {
             const job = underStaffedJobs[0]
-            spawn.spawnCreep(HAULER_BODY, ut.newName(consts.HAULER_ROLE), {memory: {
+            return spawn.spawnCreep(HAULER_BODY, ut.newName(consts.HAULER_ROLE), {memory: {
                 role: consts.HAULER_ROLE,
                 job: job.job,
                 targetID: job.targetID,

@@ -3,7 +3,6 @@ import * as ut from './utils'
 import * as consts from './constants'
 
 const UPGRADER_BODY = [MOVE,WORK,CARRY]
-const UPGRADERS_PER_CONTROLLER = 2
 
 export function runUpgrader(c: Creep) {
     if (c.memory.upgrading && ut.atEmptyEnergy(c)) {
@@ -36,34 +35,15 @@ export function runUpgrader(c: Creep) {
         }
     } else {
         // let's get some energy
-
-        // is there a depot?
-        const depot = ut.findDepot(c.room)
-        if (depot) {
-            // yes, pull energy from that
-            ut.moveAndWithdraw(c, depot)
-        } else {
-            // no, are there containers?
-            const container = c.pos.findClosestByRange(FIND_STRUCTURES, {filter: 
-                (s: Structure) => s.structureType == STRUCTURE_CONTAINER}) as StructureContainer
-            
-            if (container) {
-                // yes, pull from closest container
-                ut.moveAndWithdraw(c, container)
-            } else {
-                // no, pull from a source
-                const source: Source = c.pos.findClosestByRange(FIND_SOURCES_ACTIVE)
-                ut.moveAndHarvest(c, source)
-            }
-        }
+        ut.getEnergyFromAnywhere(c)
     }
 }
 
-export function spawnUpgraders(room: Room) {
+export function spawnUpgraders(room: Room): number {
     const spawn = ut.getRoomMainSpawn(room)
     const upgraders = _.filter(ut.getRoomCreeps(room), c => c.memory.role == consts.UPGRADER_ROLE)
-    if (upgraders.length < UPGRADERS_PER_CONTROLLER && ut.canSpawnBody(spawn, UPGRADER_BODY)) {
-        spawn.spawnCreep(UPGRADER_BODY, ut.newName(consts.UPGRADER_ROLE), {memory: {
+    if (upgraders.length < consts.UPGRADERS_PER_CONTROLLER && ut.canSpawnBody(spawn, UPGRADER_BODY)) {
+        return spawn.spawnCreep(UPGRADER_BODY, ut.newName(consts.UPGRADER_ROLE), {memory: {
             role: consts.UPGRADER_ROLE,
         }})
     }

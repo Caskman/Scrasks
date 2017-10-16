@@ -6,15 +6,24 @@ import * as consts from './constants'
 import { spawnHarvesters, runHarvester } from './harvester'
 import { spawnUpgraders, runUpgrader } from './upgrader'
 import { spawnHaulers, runHauler } from './hauler'
+import { spawnBuilders, runBuilder } from './builder'
 
 export function manageCreeps(room: Room) {
 
     const spawns: Spawn[] = room.find(FIND_MY_SPAWNS)
     const spawn = spawns[0]
 
-    spawnHarvesters(room)
-    spawnUpgraders(room)
-    spawnHaulers(room)
+    const spawners = [
+        spawnHarvesters,
+        spawnUpgraders,
+        spawnHaulers,
+        spawnBuilders,
+    ]
+    _.each(spawners, s => {
+        if (s(room) == OK) {
+            return false
+        }
+    })
 
     runCreeps(room)
 }
@@ -27,6 +36,8 @@ function runCreeps(room: Room) {
             runUpgrader(c)
         } else if (c.memory.role == consts.HAULER_ROLE) {
             runHauler(c)
+        } else if (c.memory.role == consts.BUILDER_ROLE) {
+            runBuilder(c)
         }
     })
 }

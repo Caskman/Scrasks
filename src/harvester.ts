@@ -3,44 +3,6 @@ import * as ut from './utils'
 import * as consts from './constants'
 
 const HARVESTER_BODY = [MOVE,WORK,CARRY]
-const HARVESTERS_PER_SOURCE = 2
-
-export function spawnHarvesters(room: Room) {
-    const spawn = ut.getRoomMainSpawn(room)
-    if (ut.canSpawnBody(spawn, HARVESTER_BODY)) {
-        type SourceObj = {
-            sourceID: string,
-            creeps: Creep[]
-        }
-
-        const harvesters = _.filter(ut.getRoomCreeps(room), c => c.memory.role == consts.HARVESTER_ROLE)
-        const sources: Source[] = room.find(FIND_SOURCES)
-        const sourceObjs: SourceObj[] = sources.map(s => {
-            return {
-                sourceID: s.id,
-                creeps: []
-            }
-        })
-        const sourceGroups = _.groupBy(harvesters, c => c.memory.sourceID)
-        _.each(sourceGroups, (cs, sourceID) => {
-            const obj = _.find(sourceObjs, {sourceID})
-            if (obj) {
-                obj.creeps = cs
-            }
-        })
-        const underStaffedSources = _.filter(sourceObjs, so => so.creeps.length < HARVESTERS_PER_SOURCE)
-        if (underStaffedSources.length > 0) {
-            const sourceID = _.map(underStaffedSources, so => so.sourceID)[0]
-            spawn.spawnCreep(HARVESTER_BODY, ut.newName(consts.HARVESTER_ROLE), {
-                memory: {
-                    role: consts.HARVESTER_ROLE,
-                    sourceID,
-                }
-            })
-        }
-    }
-
-}
 
 export function runHarvester(c: Creep) {
     if (c.memory.harvesting && ut.atFullEnergy(c)) {
@@ -87,13 +49,45 @@ export function runHarvester(c: Creep) {
                 storeEnergyAtBase(c)
             }
         } else {
+            // yes, let's store in it
+
+            // is the container full?
             if (container.storeCapacity == container.store.energy) {
+                // yes, store somewhere in base
                 storeEnergyAtBase(c)
             } else {
+                // no, store in the container
                 ut.moveAndTransfer(c, container)
             }
         }
     }
+}
+
+export function spawnHarvesters(room: Room): number {
+    const spawn = ut.getRoomMainSpawn(room)
+    if (ut.canSpawnBody(spawn, HARVESTER_BODY)) {
+
+        const harvesters = _.filter(ut.getRoomCreeps(room), c => c.memory.role == consts.HARVESTER_ROLE)
+        const sourceJobs = (room.find(FIND_SOURCES) as Source[])
+            .map(s => {
+                return {
+                    sourceID: s.id,
+                    creeps: harvesters.filter(h => h.memory.sourceID == s.id)
+                }
+            })
+        const underStaffedSources = _.filter(sourceJobs, 
+            sj => sj.creeps.length < consts.HARVESTERS_PER_SOURCE)
+        if (underStaffedSources.length > 0) {
+            const sourceID = _.map(underStaffedSources, sj => sj.sourceID)[0]
+            return spawn.spawnCreep(HARVESTER_BODY, ut.newName(consts.HARVESTER_ROLE), {
+                memory: {
+                    role: consts.HARVESTER_ROLE,
+                    sourceID,
+                }
+            })
+        }
+    }
+
 }
 
 function storeEnergyAtBase(c: Creep) {
@@ -124,18 +118,20 @@ function spawnIsFull(room: Room) {
 }
 
 function pickContainerLocation(source: Source) {
-    const spawn = ut.getRoomMainSpawn(source.room)
-    const room = spawn.room
+    const room = source.room
+    const spawn = ut.getRoomMainSpawn(room)
     const sPos = source.pos
 
-    const surrounding = room.lookForAtArea(LOOK_TERRAIN, 
-        sPos.y - 2, sPos.x - 2, sPos.y + 2, sPos.x + 2, true) as LookAtResultWithPos[]
-    const usableSpots = surrounding.filter(t => t.terrain != "wall")
-    const sortedUsableSpots = _.sortBy(usableSpots, s => {
-        return spawn.pos.findPathTo(s.x, s.y).length
+    const allSites = ut.getAreaSites(sPos, 2).filter(s => !s.structure && s.terrain != 'wall')
+    const harvestingSites = allSites.filter(s => sPos.getRangeTo(s.x, s.y) == 1)
+    const possibleSites = allSites.filter(s => sPos.getRangeTo(s.x, s.y) == 2)
+    const bestAdjacencies = ut.getHighestScoring(possibleSites, s => {
+        const adjacentHarvestingSites = harvestingSites.filter(
+            as => room.getPositionAt(as.x, as.y).getRangeTo(s.x, s.y) == 1)
+        return adjacentHarvestingSites.length
     })
-    const spot = sortedUsableSpots[0]
-    const pos = room.getPositionAt(spot.x, spot.y)
-    return pos
+    const closestSites = ut.getLowestScoring(bestAdjacencies, s => spawn.pos.getRangeTo(s.x, s.y))
+    const site = closestSites[0]
+    return room.getPositionAt(site.x, site.y)
 }
 

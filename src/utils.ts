@@ -142,3 +142,51 @@ export function getAreaSites(pos: RoomPosition, range: number) {
         pos.y + range, pos.x + range, true) as LookAtResultWithPos[]
     return normalizeLookObjects(sites)
 }
+
+export function getEnergyFromAnywhere(c: Creep) {
+    // is there a depot?
+    const depot = findDepot(c.room)
+    if (depot) {
+        // yes, pull energy from that
+        moveAndWithdraw(c, depot)
+    } else {
+        // no, are there containers?
+        const container = c.pos.findClosestByRange(FIND_STRUCTURES, {filter: 
+            (s: Structure) => s.structureType == STRUCTURE_CONTAINER
+                && (s as StructureContainer).store.energy > 0}) as StructureContainer
+        
+        if (container) {
+            // yes, pull from closest container
+            moveAndWithdraw(c, container)
+        } else {
+            // no, pull from a source
+            const source: Source = c.pos.findClosestByRange(FIND_SOURCES_ACTIVE)
+            moveAndHarvest(c, source)
+        }
+    }
+}
+
+export function getHighestScoring<T>(collection: ArrayLike<T>, scoringFn: (e: T) => number): T[] {
+    return getBestScoring(collection, scoringFn, true)
+}
+
+export function getLowestScoring<T>(collection: ArrayLike<T>, scoringFn: (e: T) => number): T[] {
+    return getBestScoring(collection, scoringFn, false)
+}
+
+function getBestScoring<T>(collection: ArrayLike<T>, scoringFn: (e: T) => number, max: boolean): T[] {
+    const scores = _.map(collection, s => {
+        return {
+            score: scoringFn(s),
+            site: s,
+        }
+    })
+    let bestScore: number = null
+    if (max) {
+        bestScore = _.max(scores, "score").score
+    } else {
+        bestScore = _.min(scores, "score").score
+    }
+    const bestScoring = scores.filter(s => s.score == bestScore).map(s => s.site)
+    return bestScoring
+}
