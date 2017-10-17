@@ -16,7 +16,7 @@ export const loop = function() {
     cleanCreeps()
 
     const room = _.values(Game.rooms)[0] as Room
-    
+
     // if (Game.time % 53) {
     //     checkExtensions(room)
     // }
