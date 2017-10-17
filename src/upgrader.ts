@@ -55,6 +55,6 @@ function pickContainerConstructionSite(room: Room) {
 
     let sites = ut.getAreaSites(pos, 2)
     sites = sites.filter(s => !s.structure && s.terrain != "wall")
-    sites = _.sortBy(sites, s => spawn.pos.getRangeTo(s.x, s.y))
+    sites = ut.getLowestScoring(sites, s => ut.manhattanDist(s.x, s.y, spawn.pos.x, spawn.pos.y))
     return room.getPositionAt(sites[0].x, sites[0].y)
 }

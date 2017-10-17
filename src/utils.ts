@@ -108,8 +108,8 @@ export function findDepot(room: Room): StructureContainer | StructureStorage {
 }
 
 function getRoomPosContainer(pos: RoomPosition) {
-    const containers = _.filter(pos.findInRange(FIND_STRUCTURES, 2) as Structure[], 
-        s => s.structureType == STRUCTURE_CONTAINER) as StructureContainer[]
+    const containers = pos.findInRange(FIND_STRUCTURES, 2,
+        {filter: (s: Structure) => s.structureType == STRUCTURE_CONTAINER}) as StructureContainer[]
     return _.first(containers)
 }
 
@@ -190,3 +190,61 @@ function getBestScoring<T>(collection: ArrayLike<T>, scoringFn: (e: T) => number
     const bestScoring = scores.filter(s => s.score == bestScore).map(s => s.site)
     return bestScoring
 }
+
+export function hasBasicInfra(room: Room) {
+    const sources = room.find(FIND_SOURCES) as Source[]
+    const builtUpSources = sources.filter(s => !!getSourceContainer(s))
+    return sources.length == builtUpSources.length
+}
+
+export function getBodyCost(body: string[]) {
+    return _.sum(body.map(b => BODYPART_COST[b]))
+}
+
+export function getSpawnCapacity(room: Room) {
+    const spawn = getRoomMainSpawn(room)
+    const extensions = room.find(FIND_STRUCTURES,
+        {filter: (s: Structure) => s.structureType == STRUCTURE_EXTENSION}) as StructureExtension[]
+    const extensionsCap = (EXTENSION_ENERGY_CAPACITY as {[l: number]: number})[room.controller.level]
+    return SPAWN_ENERGY_CAPACITY + extensions.length * extensionsCap
+}
+
+export function forN(count: number, fn: (index: number) => any) {
+    for (let i = 0; i < count; i++) {
+        const result = fn(i)
+        if (result === false) {
+            break
+        }
+    }
+}
+
+export function fillBody(room: Room, incomingBody: string[], filler: string[]) {
+    let body = [...incomingBody]
+    const cost = getBodyCost(body)
+    const spawnCap = getSpawnCapacity(room)
+    const spare = spawnCap - cost
+    const fillerCost = getBodyCost(filler)
+    const extraWorkCount = Math.floor(spare / fillerCost)
+    forN(extraWorkCount, i => {
+        body = body.concat(filler)
+    })
+    return body
+}
+
+export function createAreaListFrom(pos: RoomPosition, radius: number) {
+    const sites = [] as {
+        x: number,
+        y: number,
+    }[]
+    for (let x = pos.x - radius; x < pos.x + radius; x++) {
+        for (let y = pos.y - radius; y < pos.y + radius; y++) {
+            sites.push({x, y})
+        }
+    }
+    return sites
+}
+
+export function manhattanDist(ax: number, ay: number, bx: number, by: number) {
+    return Math.abs(ax - bx) + Math.abs(ay - by)
+}
+

@@ -2,7 +2,7 @@ import * as _ from 'lodash'
 import * as ut from './utils'
 import * as consts from './constants'
 
-const BUILDER_BODY = [MOVE,WORK,CARRY]
+const BARE_BONES_BUILDER_BODY = [MOVE,WORK,CARRY]
 
 export function runBuilder(c: Creep) {
     if (c.memory.building && ut.atEmptyEnergy(c)) {
@@ -36,11 +36,20 @@ export function runBuilder(c: Creep) {
 }
 
 export function spawnBuilders(room: Room): number {
+    let targetBody = null as string[]
+    // is basic infra in place?
+    if (ut.hasBasicInfra(room)) {
+        // yes, best builder possible
+        targetBody = ut.fillBody(room, [MOVE], [WORK,CARRY,CARRY])
+    } else {
+        // no, basic builder
+        targetBody = BARE_BONES_BUILDER_BODY
+    }
     const spawn = ut.getRoomMainSpawn(room)
-    if (ut.canSpawnBody(spawn, BUILDER_BODY)) {
+    if (ut.canSpawnBody(spawn, targetBody)) {
         const builders = ut.getRoomRoleCreeps(room, consts.BUILDER_ROLE)
         if (builders.length < consts.BUILDERS_PER_ROOM) {
-            return spawn.spawnCreep(BUILDER_BODY, ut.newName(consts.BUILDER_ROLE), {
+            return spawn.spawnCreep(targetBody, ut.newName(consts.BUILDER_ROLE), {
                 memory: {
                     role: consts.BUILDER_ROLE,
                 }

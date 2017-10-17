@@ -2,7 +2,7 @@ import * as _ from 'lodash'
 import * as ut from './utils'
 import * as consts from './constants'
 
-const HARVESTER_BODY = [MOVE,WORK,CARRY]
+const BASIC_HARVESTER_BODY = [MOVE,WORK,CARRY]
 
 export function runHarvester(c: Creep) {
     if (c.memory.harvesting && ut.atFullEnergy(c)) {
@@ -64,8 +64,18 @@ export function runHarvester(c: Creep) {
 }
 
 export function spawnHarvesters(room: Room): number {
+    // is basic infrastructure in place?
+    let targetBody = null as string[]
+    if (ut.hasBasicInfra(room)) {
+        // yes, let's build the biggest harvester possible
+        targetBody = ut.fillBody(room, [MOVE, CARRY], [WORK])
+    } else {
+        // no, build basic body
+        targetBody = BASIC_HARVESTER_BODY
+    }
+
     const spawn = ut.getRoomMainSpawn(room)
-    if (ut.canSpawnBody(spawn, HARVESTER_BODY)) {
+    if (ut.canSpawnBody(spawn, targetBody)) {
 
         const harvesters = _.filter(ut.getRoomCreeps(room), c => c.memory.role == consts.HARVESTER_ROLE)
         const sourceJobs = (room.find(FIND_SOURCES) as Source[])
@@ -75,11 +85,16 @@ export function spawnHarvesters(room: Room): number {
                     creeps: harvesters.filter(h => h.memory.sourceID == s.id)
                 }
             })
-        const underStaffedSources = _.filter(sourceJobs, 
-            sj => sj.creeps.length < consts.HARVESTERS_PER_SOURCE)
+        const underStaffedSources = _.filter(sourceJobs, sj => {
+            if (ut.hasBasicInfra(room) ) {
+                return sj.creeps.length < consts.BASIC_INFRA_HARVESTERS_PER_SOURCE 
+            } else {
+                return sj.creeps.length < consts.BARE_BONES_HARVESTERS_PER_SOURCE
+            }
+        })
         if (underStaffedSources.length > 0) {
             const sourceID = _.map(underStaffedSources, sj => sj.sourceID)[0]
-            return spawn.spawnCreep(HARVESTER_BODY, ut.newName(consts.HARVESTER_ROLE), {
+            return spawn.spawnCreep(targetBody, ut.newName(consts.HARVESTER_ROLE), {
                 memory: {
                     role: consts.HARVESTER_ROLE,
                     sourceID,
