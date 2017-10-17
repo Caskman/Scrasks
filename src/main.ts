@@ -5,13 +5,10 @@ import * as ut from './utils'
 import { TileMap } from './TileMap'
 
 /**
- * TODOS
- * 
- * add extension creation
- * 
+ * should move all container construction out of creeps because of double building from multiple creeps on the same job
  */
 
-export const loop = function() {
+ export const loop = function() {
 
     cleanCreeps()
 
@@ -48,6 +45,7 @@ function checkRoads(room: Room) {
             const path = spawn.pos.findPathTo(c.pos, {
                 ignoreCreeps: true,
             })
+            path.pop() // remove last step so roads don't get build under the target
             path.forEach(ps => {
                 const pos = room.getPositionAt(ps.x, ps.y)
                 pos.createConstructionSite(STRUCTURE_ROAD)

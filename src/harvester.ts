@@ -18,7 +18,7 @@ export function runHarvester(c: Creep) {
         // find a place to store energy
 
         // check if there's a container close by
-        const source: Source = Game.getObjectById(c.memory.sourceID)
+        const source = Game.getObjectById(c.memory.sourceID) as Source
         const container = ut.getSourceContainer(source)
         if (!container) {
             // nope no container
@@ -35,7 +35,7 @@ export function runHarvester(c: Creep) {
                     ut.moveAndBuild(c, location)
                 } else {
                     // nope, choose a building site if conditions are met
-                    if (allSourcesHaveHarvesters(c.room) && spawnIsFull(c.room)) {
+                    if (allSourcesHaveHarvesters(c.room)) {
                         // conditions met, create construction site
                         const location = pickContainerLocation(source)
                         c.room.createConstructionSite(location, STRUCTURE_CONTAINER)
@@ -76,22 +76,7 @@ export function spawnHarvesters(room: Room): number {
 
     const spawn = ut.getRoomMainSpawn(room)
     if (ut.canSpawnBody(spawn, targetBody)) {
-
-        const harvesters = _.filter(ut.getRoomCreeps(room), c => c.memory.role == consts.HARVESTER_ROLE)
-        const sourceJobs = (room.find(FIND_SOURCES) as Source[])
-            .map(s => {
-                return {
-                    sourceID: s.id,
-                    creeps: harvesters.filter(h => h.memory.sourceID == s.id)
-                }
-            })
-        const underStaffedSources = _.filter(sourceJobs, sj => {
-            if (ut.hasBasicInfra(room) ) {
-                return sj.creeps.length < consts.BASIC_INFRA_HARVESTERS_PER_SOURCE 
-            } else {
-                return sj.creeps.length < consts.BARE_BONES_HARVESTERS_PER_SOURCE
-            }
-        })
+        const underStaffedSources = getUnderStaffedSources(room)
         if (underStaffedSources.length > 0) {
             const sourceID = _.map(underStaffedSources, sj => sj.sourceID)[0]
             return spawn.spawnCreep(targetBody, ut.newName(consts.HARVESTER_ROLE), {
@@ -103,6 +88,25 @@ export function spawnHarvesters(room: Room): number {
         }
     }
 
+}
+
+function getUnderStaffedSources(room: Room) {
+    const harvesters = _.filter(ut.getRoomCreeps(room), c => c.memory.role == consts.HARVESTER_ROLE)
+    const sourceJobs = ut.getValidSources(room)
+        .map(s => {
+            return {
+                sourceID: s.id,
+                creeps: harvesters.filter(h => h.memory.sourceID == s.id)
+            }
+        })
+    const underStaffedSources = _.filter(sourceJobs, sj => {
+        if (ut.hasBasicInfra(room) ) {
+            return sj.creeps.length < consts.BASIC_INFRA_HARVESTERS_PER_SOURCE 
+        } else {
+            return sj.creeps.length < consts.BARE_BONES_HARVESTERS_PER_SOURCE
+        }
+    })
+    return underStaffedSources
 }
 
 function storeEnergyAtBase(c: Creep) {
@@ -120,16 +124,7 @@ function storeAtSpawn(c: Creep) {
 }
 
 function allSourcesHaveHarvesters(room: Room) {
-    const sources = room.find(FIND_SOURCES) as Source[]
-    const sourceIDs = sources.map(s => s.id)
-    const harvesters = ut.getRoomRoleCreeps(room, consts.HARVESTER_ROLE)
-    const remainingSourceIDs = _.difference(sourceIDs, harvesters.map(h => h.memory.sourceID))
-    return remainingSourceIDs.length == 0
-}
-
-function spawnIsFull(room: Room) {
-    const spawn = ut.getRoomMainSpawn(room)
-    return spawn.energy == spawn.energyCapacity
+    return getUnderStaffedSources(room).length == 0
 }
 
 function pickContainerLocation(source: Source) {

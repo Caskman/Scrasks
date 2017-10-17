@@ -27,19 +27,6 @@ export class TileMap<T> {
     }
 
 }
-function createBannedSpotsMap(sites: {x: number, y: number}[]) {
-    const map = {} as {
-        [x: number]: {
-            [y: number]: boolean
-        }
-    }
-    sites.forEach(s => {
-        if (!(s.x in map)) {
-            map[s.x] = {}
-        }
-        map[s.x][s.y] = true
-    })
-}
 
 type TileMapData<T> = {
     [x: number]: {

@@ -256,3 +256,8 @@ export function manhattanDist(ax: number, ay: number, bx: number, by: number) {
     return Math.abs(ax - bx) + Math.abs(ay - by)
 }
 
+export function getValidSources(room: Room) {
+    return (room.find(FIND_SOURCES) as Source[])
+        .filter(s => s.pos.findInRange(FIND_HOSTILE_STRUCTURES, 10).length == 0)
+}
+

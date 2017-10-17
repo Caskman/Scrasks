@@ -14,28 +14,39 @@ export function runUpgrader(c: Creep) {
     if (c.memory.upgrading) {
         // does controller have container?
         if (!ut.getControllerContainer(c.room)) {
-            // build container
+            // no
 
-            // is there a construction site?
+            // is there a container construction site?
             const sites = ut.getControllerContainerConstructionSites(c.room)
             if (sites.length > 0) {
                 // yes, let's continue building it
                 ut.moveAndBuild(c, sites[0])
             } else {
-                // no let's create one
-                const site = pickContainerConstructionSite(c.room)
-                site.createConstructionSite(STRUCTURE_CONTAINER)
+                // no, should we build a container?
+                // do the sources have containers?
+                if (_.every(ut.getValidSources(c.room), s => !!ut.getSourceContainer(s))) {
+                    // yes, let's build a controller container
+                    const site = pickContainerConstructionSite(c.room)
+                    site.createConstructionSite(STRUCTURE_CONTAINER)
+                } else {
+                    // no, let's go upgrade instead
+                    moveAndUpgrade(c)
+                }
             }
         } else {
-            // go upgrade
-            const controller = c.room.controller
-            if (c.upgradeController(controller) == ERR_NOT_IN_RANGE) {
-                c.moveTo(controller)
-            }
+            // yes, let's go upgrade
+            moveAndUpgrade(c)
         }
     } else {
         // let's get some energy
         ut.getEnergyFromAnywhere(c)
+    }
+}
+
+function moveAndUpgrade(c: Creep) {
+    const controller = c.room.controller
+    if (c.upgradeController(controller) == ERR_NOT_IN_RANGE) {
+        c.moveTo(controller)
     }
 }
 
