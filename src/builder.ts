@@ -4,6 +4,9 @@ import * as consts from './constants'
 
 const BARE_BONES_BUILDER_BODY = [MOVE,WORK,CARRY]
 
+const REPAIR_MODE = "REPAIR_MODE"
+const BUILD_MODE = "BUILD_MODE"
+
 export function runBuilder(c: Creep) {
     if (c.memory.building && ut.atEmptyEnergy(c)) {
         c.memory.building = false
@@ -16,17 +19,39 @@ export function runBuilder(c: Creep) {
 
         if (c.memory.targetID) {
             // yes
-            const target = Game.getObjectById(c.memory.targetID) as ConstructionSite
-            if (ut.moveAndBuild(c, target) == ERR_INVALID_TARGET) {
+            const target = Game.getObjectById(c.memory.targetID)
+            let code = null as number
+            if (c.memory.mode == REPAIR_MODE) {
+                code = ut.moveAndRepair(c, target as Structure)
+            } else if (c.memory.mode == BUILD_MODE) {
+                code = ut.moveAndBuild(c, target as ConstructionSite)
+            } else {
+                throw new Error("No mode for builder!")
+            }
+            if (code == ERR_INVALID_TARGET) {
                 // building is finished, cancel target
                 c.memory.targetID = null
             }
         } else {
-            // no, don't have target, pick one
+            // no, don't have a target
+            // pick a construction site
             const site = ut.getRoomMainSpawn(c.room).pos
                 .findClosestByRange(FIND_CONSTRUCTION_SITES) as ConstructionSite
             if (site) {
                 c.memory.targetID = site.id
+                c.memory.mode = BUILD_MODE
+            } else {
+                // no construction site available
+                // pick a repair target
+                const repairTargets = c.room.find(FIND_STRUCTURES, 
+                    {filter: (s: Structure) => 
+                        s.structureType != STRUCTURE_ROAD
+                            && (s.hits / s.hitsMax) < 0.9}) as Structure[]
+                const lowestHealth = _.min(repairTargets, t => t.hits / t.hitsMax)
+                if (lowestHealth) {
+                    c.memory.targetID = lowestHealth.id
+                    c.memory.mode = REPAIR_MODE
+                }
             }
         }
     } else {

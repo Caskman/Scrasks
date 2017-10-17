@@ -68,6 +68,14 @@ export function moveAndHarvest(c: Creep, source: Source) {
     return code
 }
 
+export function moveAndRepair(c: Creep, struct: Structure) {
+    const code = c.repair(struct)
+    if (code == ERR_NOT_IN_RANGE) {
+        c.moveTo(struct)
+    }
+    return code
+}
+
 export function normalizeLookObjects(objs: LookAtResultWithPos[]) {
     const groups = _.groupBy(objs, t => t.x + "," + t.y)
     const sites = _.map(groups, g => {
