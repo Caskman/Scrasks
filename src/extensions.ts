@@ -34,11 +34,13 @@ export function checkExtensions(room: Room) {
     const numPossExts = CONTROLLER_STRUCTURES[STRUCTURE_EXTENSION][room.controller.level]
     if (extensions.length < numPossExts) {
         // yes we can
+        console.log("can build more extensions")
 
         // are there extension construction sites?
         const extConstructSites = room.find(FIND_CONSTRUCTION_SITES, 
             {filter: (s: Structure) => s.structureType == STRUCTURE_EXTENSION}) as ConstructionSite[]
         if (extConstructSites.length == 0) {
+            console.log("no extension construction sites detected")
             // no, let's build some
             const queue = [] as Vector[]
             // aggregate banned areas
@@ -64,14 +66,16 @@ export function checkExtensions(room: Room) {
                     x: pos.x,
                     y: pos.y,
                 })
-                visitedSpotsMap.set(pos.x, pos.y, true)
             })
             // iterate
             let terminateEntirely = false
             for (let queuePointer = 0; queuePointer < queue.length; queuePointer++) {
+                console.log("===Running loop number " + queuePointer)
                 const startingSpot = queue[queuePointer]
+                console.log("Spot ("+startingSpot.x+","+startingSpot.y+") dir "+startingSpot.dir)
                 // have we already visited this spot?
                 if (visitedSpotsMap.get(startingSpot.x, startingSpot.y)) {
+                    console.log("already visited; skipping")
                     continue
                 }
                 let terminateLine = false
@@ -138,18 +142,25 @@ export function checkExtensions(room: Room) {
                     }
                 }) // inline spots iteration loop
 
+                // make sure to set visited
+                const end = {
+                    ...getPosInRelDir(startingSpot, FORWARD, 4),
+                    dir: startingSpot.dir,
+                }
+                visitedSpotsMap.set(startingSpot.x, startingSpot.y, true)
+                visitedSpotsMap.set(end.x, end.y, true)
+
                 // did we terminate entirely?
                 if (terminateEntirely) {
                     // yes
+                    console.log("terminating entirely")
                     break
                 } else if (terminateLine) {
                     // nope, just the line, don't push spots onto the queue
+                    console.log("terminating line")
                     return
                 } else {
-                    const end = {
-                        ...getPosInRelDir(startingSpot, FORWARD, 4),
-                        dir: startingSpot.dir,
-                    }
+                    console.log("Pushing more spots")
                     queue.push(end)
                     const left = getDirFrom(startingSpot.dir, LEFT)
                     queue.push({
@@ -164,7 +175,6 @@ export function checkExtensions(room: Room) {
                         dir: right
                     })
                 }
-                // push new spots onto the queue
             } // main iteration loop
         }
     }
@@ -186,7 +196,7 @@ function getDirTransform(dir: ABS_DIRECTION) {
             x: 1,
             y: 0,
         }
-    } else if (dir == SOUTH) {
+    } else if (dir == WEST) {
         return {
             x: -1,
             y: 0,
