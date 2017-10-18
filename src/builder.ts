@@ -1,6 +1,7 @@
 import * as _ from 'lodash'
 import * as ut from './utils'
 import * as consts from './constants'
+import * as infra from './infrastructure'
 
 const BARE_BONES_BUILDER_BODY = [MOVE,WORK,CARRY]
 
@@ -43,13 +44,9 @@ export function runBuilder(c: Creep) {
             } else {
                 // no construction site available
                 // pick a repair target
-                const repairTargets = c.room.find(FIND_STRUCTURES, 
-                    {filter: (s: Structure) => 
-                        s.structureType != STRUCTURE_ROAD
-                            && (s.hits / s.hitsMax) < 0.9}) as Structure[]
-                const lowestHealth = _.min(repairTargets, t => t.hits / t.hitsMax)
-                if (lowestHealth) {
-                    c.memory.targetID = lowestHealth.id
+                const repairTarget = findRepairTarget(c)
+                if (repairTarget) {
+                    c.memory.targetID = repairTarget.id
                     c.memory.mode = REPAIR_MODE
                 }
             }
@@ -81,4 +78,21 @@ export function spawnBuilders(room: Room): number {
             })
         }
     }
+}
+
+function findRepairTarget(c: Creep) {
+    let repairTargets = c.room.find(FIND_STRUCTURES, 
+        {filter: (s: Structure) => 
+            s.structureType != STRUCTURE_ROAD
+                && (s.hits / s.hitsMax) < 0.9}) as Structure[]
+    const desiredPaths = infra.getDesiredRoads(c.room)
+    const roadStructures = _.flattenDeep(desiredPaths.map(path => {
+        return _.flatten(path.map(spot => {
+            const structures = c.room.lookForAt(LOOK_STRUCTURES, spot.x, spot.y) as {structure: Structure}[]
+            return structures.filter(s => s.structure.structureType == STRUCTURE_ROAD).map(s => s.structure)
+        }))
+    })) as Structure[]
+    repairTargets = repairTargets.concat(roadStructures)
+    const lowestHealth = _.min(repairTargets, t => t.hits / t.hitsMax)
+    return lowestHealth
 }

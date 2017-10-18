@@ -15,9 +15,9 @@ export function manageCreeps(room: Room) {
 
     const spawners = [
         spawnHarvesters,
-        spawnUpgraders,
         spawnHaulers,
         spawnBuilders,
+        spawnUpgraders,
     ]
     _.each(spawners, s => {
         if (s(room) == OK) {

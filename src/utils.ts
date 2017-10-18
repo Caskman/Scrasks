@@ -1,4 +1,5 @@
 import * as _ from 'lodash'
+import * as consts from './constants'
 
 export function canSpawnBody(spawn: Spawn, body: string[]) {
     return spawn.spawnCreep(body, newName("test"), { dryRun: true }) == OK
@@ -200,7 +201,7 @@ function getBestScoring<T>(collection: ArrayLike<T>, scoringFn: (e: T) => number
 }
 
 export function hasBasicInfra(room: Room) {
-    const sources = room.find(FIND_SOURCES) as Source[]
+    const sources = getValidSources(room)
     const builtUpSources = sources.filter(s => !!getSourceContainer(s))
     return sources.length == builtUpSources.length
 }
@@ -256,3 +257,51 @@ export function manhattanDist(ax: number, ay: number, bx: number, by: number) {
     return Math.abs(ax - bx) + Math.abs(ay - by)
 }
 
+export function getValidSources(room: Room) {
+    return (room.find(FIND_SOURCES) as Source[])
+        .filter(s => s.pos.findInRange(FIND_HOSTILE_STRUCTURES, 10).length == 0)
+}
+
+function getSourceStaffInfo(room: Room, fullyStaffed: boolean) {
+    const harvesters = _.filter(getRoomCreeps(room), c => c.memory.role == consts.HARVESTER_ROLE)
+    const sourceJobs = getValidSources(room)
+        .map(s => {
+            return {
+                sourceID: s.id,
+                creeps: harvesters.filter(h => h.memory.sourceID == s.id)
+            }
+        })
+    const staffingLevel = desiredSourceHarvesterStaffingLevel(room)
+    if (fullyStaffed) {
+        return sourceJobs.filter(sj => sj.creeps.length == staffingLevel)
+    } else {
+        return sourceJobs.filter(sj => sj.creeps.length < staffingLevel)
+    }
+}
+
+function desiredSourceHarvesterStaffingLevel(room: Room) {
+    if (hasBasicInfra(room)) {
+        return consts.BASIC_INFRA_HARVESTERS_PER_SOURCE
+    } else {
+        return consts.BARE_BONES_HARVESTERS_PER_SOURCE
+    }
+}
+
+export function getUnderStaffedSources(room: Room) {
+    return getSourceStaffInfo(room, false)
+}
+
+export function getFullyStaffedSources(room: Room) {
+    return getSourceStaffInfo(room, true)
+    
+}
+
+export function sourcesHaveContainers(room: Room) {
+    return getValidSources(room)
+        .filter(s => !getSourceContainer(s)).length == 0
+}
+
+export function containerHasHauler(container: StructureContainer) {
+    const haulers = getRoomRoleCreeps(container.room, consts.HAULER_ROLE)
+    return haulers.some(h => h.memory.targetID == container.id)
+}
