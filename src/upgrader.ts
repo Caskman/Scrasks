@@ -2,7 +2,7 @@ import * as _ from 'lodash'
 import * as ut from './utils'
 import * as consts from './constants'
 
-const UPGRADER_BODY = [MOVE,WORK,CARRY]
+const BARE_BONES_UPGRADER_BODY = [MOVE,WORK,CARRY]
 
 export function runUpgrader(c: Creep) {
     if (c.memory.upgrading && ut.atEmptyEnergy(c)) {
@@ -23,15 +23,7 @@ export function runUpgrader(c: Creep) {
                 ut.moveAndBuild(c, sites[0])
             } else {
                 // no, should we build a container?
-                // do the sources have containers?
-                if (_.every(ut.getValidSources(c.room), s => !!ut.getSourceContainer(s))) {
-                    // yes, let's build a controller container
-                    const site = pickContainerConstructionSite(c.room)
-                    site.createConstructionSite(STRUCTURE_CONTAINER)
-                } else {
-                    // no, let's go upgrade instead
-                    moveAndUpgrade(c)
-                }
+                moveAndUpgrade(c)
             }
         } else {
             // yes, let's go upgrade
@@ -51,21 +43,27 @@ function moveAndUpgrade(c: Creep) {
 }
 
 export function spawnUpgraders(room: Room): number {
+    let targetBody = null as string[]
+    if (ut.hasBasicInfra(room) && !!ut.getControllerContainer(room)) {
+        targetBody = ut.fillBody(room, [MOVE,CARRY], [WORK])
+    } else {
+        targetBody = BARE_BONES_UPGRADER_BODY
+    }
+
     const spawn = ut.getRoomMainSpawn(room)
-    const upgraders = _.filter(ut.getRoomCreeps(room), c => c.memory.role == consts.UPGRADER_ROLE)
-    if (upgraders.length < consts.UPGRADERS_PER_CONTROLLER && ut.canSpawnBody(spawn, UPGRADER_BODY)) {
-        return spawn.spawnCreep(UPGRADER_BODY, ut.newName(consts.UPGRADER_ROLE), {memory: {
+    const upgraders = ut.getRoomRoleCreeps(room, consts.UPGRADER_ROLE)
+    const staffingLevel = desiredUpgaderStaffingLevel(room)
+    if (upgraders.length < staffingLevel && ut.canSpawnBody(spawn, targetBody)) {
+        return spawn.spawnCreep(targetBody, ut.newName(consts.UPGRADER_ROLE), {memory: {
             role: consts.UPGRADER_ROLE,
         }})
     }
 }
 
-function pickContainerConstructionSite(room: Room) {
-    const pos = room.controller.pos
-    const spawn = ut.getRoomMainSpawn(room)
-
-    let sites = ut.getAreaSites(pos, 2)
-    sites = sites.filter(s => !s.structure && s.terrain != "wall")
-    sites = ut.getLowestScoring(sites, s => ut.manhattanDist(s.x, s.y, spawn.pos.x, spawn.pos.y))
-    return room.getPositionAt(sites[0].x, sites[0].y)
+function desiredUpgaderStaffingLevel(room: Room) {
+    if (ut.hasBasicInfra(room) && !!ut.getControllerContainer(room)) {
+        return consts.BASIC_INFRA_UPGRADERS_PER_CONTROLLER
+    } else {
+        return consts.BARE_BONES_UPGRADERS_PER_CONTROLLER
+    }
 }

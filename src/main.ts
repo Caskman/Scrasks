@@ -1,11 +1,24 @@
 import * as _ from 'lodash'
 import { manageCreeps } from './creeps'
 import { checkExtensions } from './extensions'
-import * as ut from './utils'
-import { TileMap } from './TileMap'
+import { checkControllerContainers, checkSourceContainers, checkRoads, removeDuplicateContainers } from './infrastructure'
 
 /**
- * should move all container construction out of creeps because of double building from multiple creeps on the same job
+ * prevent harvester from trying to store at spawn when its line has a hauler and a container
+ *      check
+ * make sure builder can repair roads
+ *      check
+ * tweak controller road to use same logic as source road
+ *      check
+ * make sure that upgrader count goes up to two once basic infra is in place
+ *      check
+ * 
+ * builder has a weird bug where it stops sometimes
+ * re-enable extension building and verify that works well
+ * 
+ * to get to Storage we need to speed up upgrading
+ *      for that we need to have another container act as a temp Storage depot until we can get to Storage tech
+ *      then we'll work on the transition from there
  */
 
  export const loop = function() {
@@ -18,10 +31,21 @@ import { TileMap } from './TileMap'
     //     checkExtensions(room)
     // }
 
+    if (Game.time % 37 == 0) {
+        removeDuplicateContainers(room)
+    }
+
+    if (Game.time % 31 == 0) {
+        checkSourceContainers(room)
+    }
+
+    if (Game.time % 29 == 0) {
+        checkControllerContainers(room)
+    }
+
     if (Game.time % 23 == 0) {
         checkRoads(room)
     }
-
 
     manageCreeps(room)
 
@@ -32,25 +56,5 @@ function cleanCreeps() {
     const existingCreeps = _.keys(Game.creeps)
     const dirtyCreeps = _.difference(memoryCreeps, existingCreeps)
     dirtyCreeps.forEach(c => delete Memory.creeps[c])
-}
-
-function checkRoads(room: Room) {
-    const roadConstructionSites = room.find(FIND_CONSTRUCTION_SITES, 
-        {filter: (s: Structure) => s.structureType == STRUCTURE_ROAD})
-    if (roadConstructionSites.length == 0) {
-        const containers = room.find(FIND_STRUCTURES, {filter: 
-            (s: Structure) => s.structureType == STRUCTURE_CONTAINER}) as StructureContainer[]
-        const spawn = ut.getRoomMainSpawn(room)
-        containers.forEach(c => {
-            const path = spawn.pos.findPathTo(c.pos, {
-                ignoreCreeps: true,
-            })
-            path.pop() // remove last step so roads don't get build under the target
-            path.forEach(ps => {
-                const pos = room.getPositionAt(ps.x, ps.y)
-                pos.createConstructionSite(STRUCTURE_ROAD)
-            })
-        })
-    }
 }
 
