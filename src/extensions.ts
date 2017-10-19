@@ -34,13 +34,13 @@ export function checkExtensions(room: Room) {
     const numPossExts = CONTROLLER_STRUCTURES[STRUCTURE_EXTENSION][room.controller.level]
     if (extensions.length < numPossExts) {
         // yes we can
-        console.log("can build more extensions")
+        // console.log("can build more extensions")
 
         // are there extension construction sites?
         const extConstructSites = room.find(FIND_CONSTRUCTION_SITES, 
             {filter: (s: Structure) => s.structureType == STRUCTURE_EXTENSION}) as ConstructionSite[]
         if (extConstructSites.length == 0) {
-            console.log("no extension construction sites detected")
+            // console.log("no extension construction sites detected")
             // no, let's build some
             const queue = [] as Vector[]
             // aggregate banned areas
@@ -70,12 +70,12 @@ export function checkExtensions(room: Room) {
             // iterate
             let terminateEntirely = false
             for (let queuePointer = 0; queuePointer < queue.length; queuePointer++) {
-                console.log("===Running loop number " + queuePointer)
+                // console.log("===Running loop number " + queuePointer)
                 const startingSpot = queue[queuePointer]
-                console.log("Spot ("+startingSpot.x+","+startingSpot.y+") dir "+startingSpot.dir)
+                // console.log("Spot ("+startingSpot.x+","+startingSpot.y+") dir "+startingSpot.dir)
                 // have we already visited this spot?
                 if (visitedSpotsMap.get(startingSpot.x, startingSpot.y)) {
-                    console.log("already visited; skipping")
+                    // console.log("already visited; skipping")
                     continue
                 }
                 let terminateLine = false
@@ -153,14 +153,14 @@ export function checkExtensions(room: Room) {
                 // did we terminate entirely?
                 if (terminateEntirely) {
                     // yes
-                    console.log("terminating entirely")
+                    // console.log("terminating entirely")
                     break
                 } else if (terminateLine) {
                     // nope, just the line, don't push spots onto the queue
-                    console.log("terminating line")
+                    // console.log("terminating line")
                     return
                 } else {
-                    console.log("Pushing more spots")
+                    // console.log("Pushing more spots")
                     queue.push(end)
                     const left = getDirFrom(startingSpot.dir, LEFT)
                     queue.push({

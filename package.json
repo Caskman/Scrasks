@@ -6,7 +6,7 @@
   "scripts": {
     "test": "mocha -- dist/test/*.spec.js",
     "watch": "flow-watch",
-    "deploy": "grunt screeps",
+    "deploy": "npm run build && grunt screeps",
     "build": "rm -rf dist; tsc",
     "move": "cp dist/*.js \"/Users/caskman/Library/Application Support/Screeps/scripts/127_0_0_1___21025/default/.\"",
     "start": "npm run build && npm run move"

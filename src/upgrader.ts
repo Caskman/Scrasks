@@ -35,16 +35,9 @@ export function runUpgrader(c: Creep) {
     }
 }
 
-function moveAndUpgrade(c: Creep) {
-    const controller = c.room.controller
-    if (c.upgradeController(controller) == ERR_NOT_IN_RANGE) {
-        c.moveTo(controller)
-    }
-}
-
 export function spawnUpgraders(room: Room): number {
     let targetBody = null as string[]
-    if (ut.hasBasicInfra(room) && !!ut.getControllerContainer(room)) {
+    if (ut.hasBasicInfra(room) && !!ut.getControllerContainer(room) && ut.anyRoadConstructionSites(room)) {
         targetBody = ut.fillBody(room, [MOVE,CARRY], [WORK])
     } else {
         targetBody = BARE_BONES_UPGRADER_BODY
@@ -57,6 +50,13 @@ export function spawnUpgraders(room: Room): number {
         return spawn.spawnCreep(targetBody, ut.newName(consts.UPGRADER_ROLE), {memory: {
             role: consts.UPGRADER_ROLE,
         }})
+    }
+}
+
+function moveAndUpgrade(c: Creep) {
+    const controller = c.room.controller
+    if (c.upgradeController(controller) == ERR_NOT_IN_RANGE) {
+        c.moveTo(controller)
     }
 }
 

@@ -20,18 +20,29 @@ export function runBuilder(c: Creep) {
 
         if (c.memory.targetID) {
             // yes
+
+            // which mode?
             const target = Game.getObjectById(c.memory.targetID)
             let code = null as number
             if (c.memory.mode == REPAIR_MODE) {
-                code = ut.moveAndRepair(c, target as Structure)
+                // repair, is the target repaired?
+                const repairTarget = target as Structure
+                if (repairTarget.hits == repairTarget.hitsMax) {
+                    // yes, cancel target
+                    c.memory.targetID = null
+                } else {
+                    // no, repair it
+                    code = ut.moveAndRepair(c, target as Structure)
+                }
             } else if (c.memory.mode == BUILD_MODE) {
+                // building, build it!
                 code = ut.moveAndBuild(c, target as ConstructionSite)
+                if (code == ERR_INVALID_TARGET) {
+                    // building is finished, cancel target
+                    c.memory.targetID = null
+                }
             } else {
                 throw new Error("No mode for builder!")
-            }
-            if (code == ERR_INVALID_TARGET) {
-                // building is finished, cancel target
-                c.memory.targetID = null
             }
         } else {
             // no, don't have a target
@@ -48,6 +59,7 @@ export function runBuilder(c: Creep) {
                 if (repairTarget) {
                     c.memory.targetID = repairTarget.id
                     c.memory.mode = REPAIR_MODE
+                } else {
                 }
             }
         }
@@ -87,10 +99,15 @@ function findRepairTarget(c: Creep) {
                 && (s.hits / s.hitsMax) < 0.9}) as Structure[]
     const desiredPaths = infra.getDesiredRoads(c.room)
     const roadStructures = _.flattenDeep(desiredPaths.map(path => {
-        return _.flatten(path.map(spot => {
-            const structures = c.room.lookForAt(LOOK_STRUCTURES, spot.x, spot.y) as {structure: Structure}[]
-            return structures.filter(s => s.structure.structureType == STRUCTURE_ROAD).map(s => s.structure)
-        }))
+        const messedUpStructsList = path.map(spot => {
+            const structures = c.room.lookForAt(
+                LOOK_STRUCTURES, spot.x, spot.y) as Structure[]
+            const roads = structures
+                .filter(s => s.structureType == STRUCTURE_ROAD)
+            return roads
+        })
+        const structs = _.flatten(messedUpStructsList)
+        return structs
     })) as Structure[]
     repairTargets = repairTargets.concat(roadStructures)
     const lowestHealth = _.min(repairTargets, t => t.hits / t.hitsMax)

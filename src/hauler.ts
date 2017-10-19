@@ -52,6 +52,7 @@ function runTransportJob(c: Creep) {
                 filter: (s: Structure) => 
                     s.structureType == STRUCTURE_CONTAINER
                     && s.id != c.memory.targetID
+                    && (s as StructureContainer).store.energy > 0
             }) as Structure
             if (container) {
                 ut.moveAndWithdraw(c, container)
@@ -69,29 +70,8 @@ function runCollectJob(c: Creep) {
             // yes, let's store there
             ut.moveAndTransfer(c, depot)
         } else {
-            // no, is spawn full?
-            if (ut.isSpawnFull(c.room)) {
-                // yes, let's build a depot
-
-                // do nothing for now until we get to the point of building storage
-
-                // are we currently building a depot?
-                /*
-                const depotConstructionSites = getDepotConstructionSites(c.room)
-                if (depotConstructionSites.length > 0) {
-                    // yes, continue building depot
-                    const depotSite = depotConstructionSites[0]
-                    ut.moveAndBuild(c, depotSite)
-                } else {
-                    // no, let's create one
-                    const location = pickDepotConstructionSite(c.room)
-                    c.room.createConstructionSite(location, STRUCTURE_CONTAINER)
-                }
-                */
-            } else {
-                // no, let's store at spawn
-                ut.moveAndTransfer(c, ut.getRoomMainSpawn(c.room))
-            }
+            // no, store in spawn
+            ut.moveAndTransfer(c, ut.getRoomMainSpawn(c.room))
         }
     } else {
         // no, let's get some energy
@@ -102,11 +82,6 @@ function runCollectJob(c: Creep) {
 
 export function spawnHaulers(room: Room): number {
     let targetBody = ut.fillBody(room, [MOVE], [CARRY])
-    // const underStaffedJobs = getUnderstaffedHaulerJobs(room)
-    // console.log(underStaffedJobs.reduce((s, j) => {
-    //     const struct = Game.getObjectById(j.targetID) as Structure
-    //     return `${s},(${struct.structureType},${j.creeps.length})`
-    // }, ""))
     
     const spawn = ut.getRoomMainSpawn(room)
     if (ut.canSpawnBody(spawn, targetBody)) {

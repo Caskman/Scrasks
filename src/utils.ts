@@ -247,7 +247,9 @@ export function createAreaListFrom(pos: RoomPosition, radius: number) {
     }[]
     for (let x = pos.x - radius; x < pos.x + radius; x++) {
         for (let y = pos.y - radius; y < pos.y + radius; y++) {
-            sites.push({x, y})
+            if (x != pos.x && y != pos.y) {
+                sites.push({x, y})
+            }
         }
     }
     return sites
@@ -304,4 +306,9 @@ export function sourcesHaveContainers(room: Room) {
 export function containerHasHauler(container: StructureContainer) {
     const haulers = getRoomRoleCreeps(container.room, consts.HAULER_ROLE)
     return haulers.some(h => h.memory.targetID == container.id)
+}
+
+export function anyRoadConstructionSites(room: Room) {
+    return room.find(FIND_CONSTRUCTION_SITES, {filter: (s: Structure) => 
+        s.structureType == STRUCTURE_ROAD}).length > 0
 }

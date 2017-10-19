@@ -4,16 +4,7 @@ import { checkExtensions } from './extensions'
 import { checkControllerContainers, checkSourceContainers, checkRoads, removeDuplicateContainers } from './infrastructure'
 
 /**
- * prevent harvester from trying to store at spawn when its line has a hauler and a container
- *      check
- * make sure builder can repair roads
- *      check
- * tweak controller road to use same logic as source road
- *      check
- * make sure that upgrader count goes up to two once basic infra is in place
- *      check
- * 
- * builder has a weird bug where it stops sometimes
+ * get depot building running along with all energy gathering and storing using the depot
  * re-enable extension building and verify that works well
  * 
  * to get to Storage we need to speed up upgrading
