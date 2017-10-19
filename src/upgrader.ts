@@ -31,7 +31,7 @@ export function runUpgrader(c: Creep) {
         }
     } else {
         // let's get some energy
-        ut.getEnergyFromAnywhere(c)
+        ut.getEnergyQuickly(c)
     }
 }
 

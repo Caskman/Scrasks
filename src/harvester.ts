@@ -30,7 +30,7 @@ export function runHarvester(c: Creep) {
                 secondaryPriority(c)
             } else {
                 // no, store the energy yourself
-                storeEnergyAtBase(c)
+                ut.storeEnergyAtBase(c)
             }
         }
     }
@@ -52,7 +52,7 @@ function secondaryPriority(c: Creep) {
             ut.moveAndBuild(c, location)
         } else {
             // nope, just store energy at base
-            storeEnergyAtBase(c)
+            ut.storeEnergyAtBase(c)
         }
     }
 }
@@ -82,15 +82,6 @@ export function spawnHarvesters(room: Room): number {
         }
     }
 
-}
-
-function storeEnergyAtBase(c: Creep) {
-    const depot = ut.findDepot(c.room)
-    if (depot) {
-        ut.moveAndTransfer(c, depot)
-    } else {
-        storeAtSpawn(c)
-    }
 }
 
 function storeAtSpawn(c: Creep) {

@@ -65,7 +65,7 @@ export function runBuilder(c: Creep) {
         }
     } else {
         // recharging
-        ut.getEnergyFromAnywhere(c)
+        ut.getEnergyQuickly(c)
     }
 }
 

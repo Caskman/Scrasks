@@ -41,23 +41,7 @@ function runTransportJob(c: Creep) {
     } else {
         // get some energy!
 
-        // is there a depot?
-        const depot = ut.findDepot(c.room)
-        if (depot) {
-            // yes, pull energy from that
-            ut.moveAndWithdraw(c, depot)
-        } else {
-            // no, are there containers?
-            const container = c.pos.findClosestByRange(FIND_STRUCTURES, {
-                filter: (s: Structure) => 
-                    s.structureType == STRUCTURE_CONTAINER
-                    && s.id != c.memory.targetID
-                    && (s as StructureContainer).store.energy > 0
-            }) as Structure
-            if (container) {
-                ut.moveAndWithdraw(c, container)
-            }
-        }
+        ut.getEnergyFromBase(c, [c.memory.targetID])
     }
 }
 
@@ -65,14 +49,7 @@ function runCollectJob(c: Creep) {
     // are we hauling?
     if (c.memory.hauling) {
         // yes, is there a depot next to spawn?
-        const depot = ut.findDepot(c.room)
-        if (depot) {
-            // yes, let's store there
-            ut.moveAndTransfer(c, depot)
-        } else {
-            // no, store in spawn
-            ut.moveAndTransfer(c, ut.getRoomMainSpawn(c.room))
-        }
+        ut.storeEnergyAtBase(c)
     } else {
         // no, let's get some energy
         const source = Game.getObjectById(c.memory.targetID) as StructureContainer

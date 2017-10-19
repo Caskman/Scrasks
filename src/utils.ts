@@ -162,26 +162,57 @@ export function getAreaSites(pos: RoomPosition, range: number) {
     return normalizeLookObjects(sites)
 }
 
-export function getEnergyFromAnywhere(c: Creep) {
-    // is there a depot?
+export function getEnergyQuickly(c: Creep) {
+    const energyRepo = c.pos.findClosestByRange(FIND_STRUCTURES, {filter: (s: Structure) => {
+        const store = s as (StructureContainer | StructureStorage)
+        return (
+            store.structureType == STRUCTURE_STORAGE 
+            || store.structureType == STRUCTURE_CONTAINER
+        )
+        && store.store.energy > 0
+    }}) as (StructureContainer | StructureStorage)
+
+    // is there an energy repo?
+    if (energyRepo) {
+        // yes
+        moveAndWithdraw(c, energyRepo)
+    } else {
+        // no, go gather your energy!
+        const source = c.pos.findClosestByRange(FIND_SOURCES_ACTIVE) as Source
+        moveAndHarvest(c, source)
+    }
+}
+
+export function getEnergyFromBase(c: Creep, exclude = [] as string[]) {
+    // depot?
     const depot = findDepot(c.room)
     if (depot) {
-        // yes, pull energy from that
+        // yes
         moveAndWithdraw(c, depot)
     } else {
-        // no, are there containers?
-        const container = c.pos.findClosestByRange(FIND_STRUCTURES, {filter: 
-            (s: Structure) => s.structureType == STRUCTURE_CONTAINER
-                && (s as StructureContainer).store.energy > 0}) as StructureContainer
-        
+        // no
+        const container = c.pos.findClosestByRange(FIND_STRUCTURES, {
+            filter: (s: Structure) => 
+                s.structureType == STRUCTURE_CONTAINER
+                && _.includes(exclude, s.id)
+                && (s as StructureContainer).store.energy > 0
+        }) as StructureContainer
         if (container) {
-            // yes, pull from closest container
             moveAndWithdraw(c, container)
-        } else {
-            // no, pull from a source
-            const source: Source = c.pos.findClosestByRange(FIND_SOURCES_ACTIVE)
-            moveAndHarvest(c, source)
         }
+    }
+}
+
+export function storeEnergyAtBase(c: Creep) {
+    const depot = findDepot(c.room)
+    // haz depot?
+    if (depot) {
+        // yes, store there
+        moveAndTransfer(c, depot)
+    } else {
+        // no, store at spawn
+        const spawn = getRoomMainSpawn(c.room)
+        moveAndTransfer(c, spawn)
     }
 }
 
