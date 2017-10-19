@@ -95,6 +95,15 @@ function getUnderstaffedHaulerJobs(room: Room) {
         })
     }
 
+    const depot = ut.findDepot(room)
+    if (depot) {
+        jobs.push({
+            targetID: ut.getRoomMainSpawn(room).id,
+            job: consts.HAULER_TRANSPORT_JOB,
+            creeps: [],
+        })
+    }
+
     const haulers = ut.getRoomRoleCreeps(room, consts.HAULER_ROLE)
     haulers.forEach(h => {
         const job = _.find(jobs, {targetID: h.memory.targetID})

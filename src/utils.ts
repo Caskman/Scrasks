@@ -204,15 +204,18 @@ export function getEnergyFromBase(c: Creep, exclude = [] as string[]) {
 }
 
 export function storeEnergyAtBase(c: Creep) {
-    const depot = findDepot(c.room)
-    // haz depot?
-    if (depot) {
-        // yes, store there
-        moveAndTransfer(c, depot)
-    } else {
-        // no, store at spawn
-        const spawn = getRoomMainSpawn(c.room)
+    // is spawn full?
+    const spawn = getRoomMainSpawn(c.room)
+    if (!isSpawnFull(c.room)) {
+        // nope, store in it
         moveAndTransfer(c, spawn)
+    } else {
+        // yes, is there a depot?
+        const depot = findDepot(c.room)
+        if (depot) {
+            // yes, store there
+            moveAndTransfer(c, depot)
+        }        
     }
 }
 

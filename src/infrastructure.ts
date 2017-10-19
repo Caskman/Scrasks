@@ -125,6 +125,9 @@ export function checkDepot(room: Room) {
     // is there already a depot?
     if (!ut.findDepot(room)) {
         // no, should we build a depot?
+        // is there a construction site?
+        // const spawn = ut.getRoomMainSpawn(room)
+        // const constructionSites = 
         if (ut.sourcesHaveContainers(room)) {
             // yes, build the depot
             const location = pickDepotLocation(room)
