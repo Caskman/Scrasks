@@ -86,6 +86,7 @@ export function normalizeLookObjects(objs: LookAtResultWithPos[]) {
             creep: null as Creep,
             structure: null as Structure,
             terrain: null as string,
+            constructionSite: null as ConstructionSite,
         }
         return g.reduce((s, o) => {
             if (o.type == "creep") {
@@ -94,6 +95,8 @@ export function normalizeLookObjects(objs: LookAtResultWithPos[]) {
                 s.structure = o.structure
             } else if (o.type == "terrain") {
                 s.terrain = o.terrain
+            } else if (o.type == "constructionSite") {
+                s.constructionSite = o.constructionSite
             }
             return s
         }, site)

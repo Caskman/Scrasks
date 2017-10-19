@@ -126,21 +126,31 @@ export function checkDepot(room: Room) {
     if (!ut.findDepot(room)) {
         // no, should we build a depot?
         // is there a construction site?
-        // const spawn = ut.getRoomMainSpawn(room)
-        // const constructionSites = 
-        if (ut.sourcesHaveContainers(room)) {
-            // yes, build the depot
-            const location = pickDepotLocation(room)
-            // pick adjacent location for preliminary depot
-            const spawn = ut.getRoomMainSpawn(room)
-            const sites = ut.createAreaListFrom(location, 1)
-            const closestSites = sites
-                // spots within 2 range of spawn
-                .filter(s => spawn.pos.getRangeTo(s.x, s.y) == 2)
-            const containerLocation = closestSites[0]
-            room.createConstructionSite(
-                containerLocation.x, containerLocation.y, 
-                STRUCTURE_CONTAINER)
+        const spawn = ut.getRoomMainSpawn(room)
+        const constructionSites = ut.getAreaSites(spawn.pos, 2)
+            .filter(s => 
+                !!s.constructionSite 
+                && (
+                    s.constructionSite.structureType == STRUCTURE_STORAGE
+                    || s.constructionSite.structureType == STRUCTURE_CONTAINER
+                ))
+            .map(s => s.constructionSite)
+        if (constructionSites.length == 0) {
+            // no construction sites
+            if (ut.sourcesHaveContainers(room)) {
+                // yes, build the depot
+                const location = pickDepotLocation(room)
+                // pick adjacent location for preliminary depot
+                const spawn = ut.getRoomMainSpawn(room)
+                const sites = ut.createAreaListFrom(location, 1)
+                const closestSites = sites
+                    // spots within 2 range of spawn
+                    .filter(s => spawn.pos.getRangeTo(s.x, s.y) == 2)
+                const containerLocation = closestSites[0]
+                room.createConstructionSite(
+                    containerLocation.x, containerLocation.y, 
+                    STRUCTURE_CONTAINER)
+            }
         }
     }
 }
