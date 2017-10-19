@@ -89,21 +89,25 @@ export function checkRoads(room: Room) {
 export function getDesiredRoads(room: Room) {
     const containers = room.find(FIND_STRUCTURES, {filter: 
         (s: Structure) => s.structureType == STRUCTURE_CONTAINER}) as StructureContainer[]
-    const spawn = ut.getRoomMainSpawn(room)
     const desiredPaths = containers.map(c => {
-        // find the desired ending point from spawn to container
-        const containerAdjacentSites = ut.createAreaListFrom(c.pos, 1)
-        // get the spots closest to spawn
-        const closestSites = ut.getLowestScoring(containerAdjacentSites, 
-            s => ut.manhattanDist(spawn.pos.x, spawn.pos.y, s.x, s.y))
-        const chosenDestination = closestSites[0]
-        const destinationPos = room.getPositionAt(chosenDestination.x, chosenDestination.y)
-        const path = spawn.pos.findPathTo(destinationPos, {
-            ignoreCreeps: true,
-        })
-        return path
+        return getPathFromSpawnToContainer(room, c)
     })
     return desiredPaths
+}
+
+export function getPathFromSpawnToContainer(room: Room, c: StructureContainer) {
+    const spawn = ut.getRoomMainSpawn(room)
+    // find the desired ending point from spawn to container
+    const containerAdjacentSites = ut.createAreaListFrom(c.pos, 1)
+    // get the spots closest to spawn
+    const closestSites = ut.getLowestScoring(containerAdjacentSites, 
+        s => ut.manhattanDist(spawn.pos.x, spawn.pos.y, s.x, s.y))
+    const chosenDestination = closestSites[0]
+    const destinationPos = room.getPositionAt(chosenDestination.x, chosenDestination.y)
+    const path = spawn.pos.findPathTo(destinationPos, {
+        ignoreCreeps: true,
+    })
+    return path
 }
 
 export function removeDuplicateContainers(room: Room) {

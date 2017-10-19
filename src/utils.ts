@@ -249,9 +249,9 @@ export function createAreaListFrom(pos: RoomPosition, radius: number) {
         x: number,
         y: number,
     }[]
-    for (let x = pos.x - radius; x < pos.x + radius; x++) {
-        for (let y = pos.y - radius; y < pos.y + radius; y++) {
-            if (x != pos.x && y != pos.y) {
+    for (let x = pos.x - radius; x <= pos.x + radius; x++) {
+        for (let y = pos.y - radius; y <= pos.y + radius; y++) {
+            if (x != pos.x || y != pos.y) {
                 sites.push({x, y})
             }
         }
