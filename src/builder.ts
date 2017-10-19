@@ -72,7 +72,7 @@ export function runBuilder(c: Creep) {
 export function spawnBuilders(room: Room): number {
     let targetBody = null as string[]
     // is basic infra in place?
-    if (ut.hasBasicInfra(room)) {
+    if (ut.sourcesHaveContainers(room)) {
         // yes, best builder possible
         targetBody = ut.fillBody(room, [MOVE], [WORK,CARRY,CARRY])
     } else {

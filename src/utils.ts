@@ -110,10 +110,20 @@ export function getClearance(pos: RoomPosition) {
 
 export function findDepot(room: Room): StructureContainer | StructureStorage {
     const spawn = getRoomMainSpawn(room)
-    const structures = spawn.pos.findInRange(FIND_MY_STRUCTURES, 2) as Structure[]
-    const relevantStructures = structures.filter(s => 
-        s.structureType == STRUCTURE_STORAGE) as StructureStorage[]
-    return _.first(relevantStructures)
+    const structures = spawn.pos.findInRange(FIND_STRUCTURES, 2, 
+        {filter: (s: Structure) => 
+            s.structureType == STRUCTURE_STORAGE
+            || s.structureType == STRUCTURE_CONTAINER
+        }) as Structure[]
+    const storage = _.find(structures, s => 
+        s.structureType == STRUCTURE_STORAGE) as StructureStorage
+    if (storage) {
+        return storage
+    } else {
+        const container = _.find(structures, s => 
+            s.structureType == STRUCTURE_CONTAINER) as StructureContainer
+        return container
+    }
 }
 
 function getRoomPosContainer(pos: RoomPosition) {
@@ -200,12 +210,6 @@ function getBestScoring<T>(collection: ArrayLike<T>, scoringFn: (e: T) => number
     return bestScoring
 }
 
-export function hasBasicInfra(room: Room) {
-    const sources = getValidSources(room)
-    const builtUpSources = sources.filter(s => !!getSourceContainer(s))
-    return sources.length == builtUpSources.length
-}
-
 export function getBodyCost(body: string[]) {
     return _.sum(body.map(b => BODYPART_COST[b]))
 }
@@ -282,7 +286,7 @@ function getSourceStaffInfo(room: Room, fullyStaffed: boolean) {
 }
 
 function desiredSourceHarvesterStaffingLevel(room: Room) {
-    if (hasBasicInfra(room)) {
+    if (sourcesHaveContainers(room)) {
         return consts.BASIC_INFRA_HARVESTERS_PER_SOURCE
     } else {
         return consts.BARE_BONES_HARVESTERS_PER_SOURCE

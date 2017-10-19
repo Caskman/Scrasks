@@ -60,7 +60,7 @@ function secondaryPriority(c: Creep) {
 export function spawnHarvesters(room: Room): number {
     // is basic infrastructure in place?
     let targetBody = null as string[]
-    if (ut.hasBasicInfra(room)) {
+    if (ut.sourcesHaveContainers(room)) {
         // yes, let's build the biggest harvester possible
         targetBody = ut.fillBody(room, [MOVE, CARRY], [WORK])
     } else {

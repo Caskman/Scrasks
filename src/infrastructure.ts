@@ -116,3 +116,36 @@ export function removeDuplicateContainers(room: Room) {
         clone.forEach(c => c.destroy())
     })
 }
+
+export function checkDepot(room: Room) {
+    // is there already a depot?
+    if (!ut.findDepot(room)) {
+        // no, should we build a depot?
+        if (ut.sourcesHaveContainers(room)) {
+            // yes, build the depot
+            const location = pickDepotLocation(room)
+            // pick adjacent location for preliminary depot
+            const spawn = ut.getRoomMainSpawn(room)
+            const sites = ut.createAreaListFrom(location, 1)
+            const closestSites = sites
+                // spots within 2 range of spawn
+                .filter(s => spawn.pos.getRangeTo(s.x, s.y) == 2)
+            const containerLocation = closestSites[0]
+            room.createConstructionSite(
+                containerLocation.x, containerLocation.y, 
+                STRUCTURE_CONTAINER)
+        }
+    }
+}
+
+function pickDepotLocation(room: Room): RoomPosition {
+    const spawn = ut.getRoomMainSpawn(room)
+    const sites = ut.createAreaListFrom(spawn.pos, 2)
+    const ringSites = sites.filter(s => 
+        ut.manhattanDist(spawn.pos.x, spawn.pos.y, s.x, s.y))
+    const controlPos = room.controller.pos
+    const closestToController = ut.getLowestScoring(ringSites, 
+        s => ut.manhattanDist(s.x, s.y, controlPos.x, controlPos.y))
+    const location = closestToController[0]
+    return room.getPositionAt(location.x, location.y)
+}

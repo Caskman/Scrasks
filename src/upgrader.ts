@@ -37,7 +37,7 @@ export function runUpgrader(c: Creep) {
 
 export function spawnUpgraders(room: Room): number {
     let targetBody = null as string[]
-    if (ut.hasBasicInfra(room) && !!ut.getControllerContainer(room) && ut.anyRoadConstructionSites(room)) {
+    if (ut.sourcesHaveContainers(room) && !!ut.getControllerContainer(room) && ut.anyRoadConstructionSites(room)) {
         targetBody = ut.fillBody(room, [MOVE,CARRY], [WORK])
     } else {
         targetBody = BARE_BONES_UPGRADER_BODY
@@ -61,7 +61,7 @@ function moveAndUpgrade(c: Creep) {
 }
 
 function desiredUpgaderStaffingLevel(room: Room) {
-    if (ut.hasBasicInfra(room) && !!ut.getControllerContainer(room)) {
+    if (ut.sourcesHaveContainers(room) && !!ut.getControllerContainer(room)) {
         return consts.BASIC_INFRA_UPGRADERS_PER_CONTROLLER
     } else {
         return consts.BARE_BONES_UPGRADERS_PER_CONTROLLER

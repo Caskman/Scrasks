@@ -22,6 +22,8 @@ import { checkControllerContainers, checkSourceContainers, checkRoads, removeDup
     //     checkExtensions(room)
     // }
 
+    
+
     if (Game.time % 37 == 0) {
         removeDuplicateContainers(room)
     }
