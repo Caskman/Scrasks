@@ -194,7 +194,7 @@ export function getEnergyFromBase(c: Creep, exclude = [] as string[]) {
         const container = c.pos.findClosestByRange(FIND_STRUCTURES, {
             filter: (s: Structure) => 
                 s.structureType == STRUCTURE_CONTAINER
-                && _.includes(exclude, s.id)
+                && !_.includes(exclude, s.id)
                 && (s as StructureContainer).store.energy > 0
         }) as StructureContainer
         if (container) {

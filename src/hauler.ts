@@ -40,7 +40,6 @@ function runTransportJob(c: Creep) {
         ut.moveAndTransfer(c, target)
     } else {
         // get some energy!
-
         ut.getEnergyFromBase(c, [c.memory.targetID])
     }
 }

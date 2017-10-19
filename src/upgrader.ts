@@ -37,7 +37,14 @@ export function runUpgrader(c: Creep) {
 
 export function spawnUpgraders(room: Room): number {
     let targetBody = null as string[]
-    if (ut.sourcesHaveContainers(room) && !!ut.getControllerContainer(room) && ut.anyRoadConstructionSites(room)) {
+    const sourcesHaveContainers = ut.sourcesHaveContainers(room)
+    const controllerHasContainer = !!ut.getControllerContainer(room)
+    const anyRoadConstructionSites = ut.anyRoadConstructionSites(room)
+    if (
+        sourcesHaveContainers
+        && controllerHasContainer
+        && !anyRoadConstructionSites
+    ) {
         targetBody = ut.fillBody(room, [MOVE,CARRY], [WORK])
     } else {
         targetBody = BARE_BONES_UPGRADER_BODY
