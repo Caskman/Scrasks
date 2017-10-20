@@ -111,22 +111,26 @@ export function getClearance(pos: RoomPosition) {
     return clearSites.length
 }
 
-export function findDepot(room: Room): StructureContainer | StructureStorage {
+export function findContainerDepot(room: Room): StructureContainer {
+    const spawn = getRoomMainSpawn(room)
+    const structures = spawn.pos.findInRange(FIND_STRUCTURES, 2, 
+        {filter: (s: Structure) => 
+            s.structureType == STRUCTURE_CONTAINER
+        }) as StructureContainer[]
+    return structures[0]
+}
+
+export function findStorageDepot(room: Room): StructureStorage {
     const spawn = getRoomMainSpawn(room)
     const structures = spawn.pos.findInRange(FIND_STRUCTURES, 2, 
         {filter: (s: Structure) => 
             s.structureType == STRUCTURE_STORAGE
-            || s.structureType == STRUCTURE_CONTAINER
-        }) as Structure[]
-    const storage = _.find(structures, s => 
-        s.structureType == STRUCTURE_STORAGE) as StructureStorage
-    if (storage) {
-        return storage
-    } else {
-        const container = _.find(structures, s => 
-            s.structureType == STRUCTURE_CONTAINER) as StructureContainer
-        return container
-    }
+        }) as StructureStorage[]
+    return structures[0]
+}
+
+export function depotExists(room: Room) {
+    return !!findContainerDepot(room) || !!findStorageDepot(room)
 }
 
 function getRoomPosContainer(pos: RoomPosition) {
@@ -188,20 +192,29 @@ export function getEnergyQuickly(c: Creep) {
 
 export function getEnergyFromBase(c: Creep, exclude = [] as string[]) {
     // depot?
-    const depot = findDepot(c.room)
-    if (depot) {
-        // yes
-        moveAndWithdraw(c, depot)
+    const storage = findStorageDepot(c.room)
+    if (
+        storage && storage.store.energy > 0 
+        && !_.includes(exclude, storage.id)
+    ) {
+        moveAndWithdraw(c, storage)
     } else {
-        // no
-        const container = c.pos.findClosestByRange(FIND_STRUCTURES, {
-            filter: (s: Structure) => 
-                s.structureType == STRUCTURE_CONTAINER
-                && !_.includes(exclude, s.id)
-                && (s as StructureContainer).store.energy > 0
-        }) as StructureContainer
-        if (container) {
+        const container = findContainerDepot(c.room)
+        if (
+            container && container.store.energy > 0 
+            && !_.includes(exclude, container.id)
+        ) {
             moveAndWithdraw(c, container)
+        } else {
+            const container = c.pos.findClosestByRange(FIND_STRUCTURES, {
+                filter: (s: Structure) => 
+                    s.structureType == STRUCTURE_CONTAINER
+                    && !_.includes(exclude, s.id)
+                    && (s as StructureContainer).store.energy > 0
+            }) as StructureContainer
+            if (container) {
+                moveAndWithdraw(c, container)
+            }
         }
     }
 }
@@ -214,12 +227,19 @@ export function storeEnergyAtBase(c: Creep) {
         moveAndTransfer(c, spawn)
     } else {
         // yes, is there a depot?
-        const depot = findDepot(c.room)
-        if (depot) {
-            // yes, store there
-            moveAndTransfer(c, depot)
-        }        
+        const storage = findStorageDepot(c.room)
+        if (storage) {
+            moveAndTransfer(c, storage)
+        } else {
+            const container = findContainerDepot(c.room)
+            moveAndTransfer(c, container)
+        }
     }
+}
+
+export function storeInSpawn(c: Creep) {
+    const spawn = getRoomMainSpawn(c.room)
+    moveAndTransfer(c, spawn)
 }
 
 export function getHighestScoring<T>(collection: ArrayLike<T>, scoringFn: (e: T) => number): T[] {

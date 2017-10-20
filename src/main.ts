@@ -1,7 +1,13 @@
 import * as _ from 'lodash'
 import { manageCreeps } from './creeps'
 import { checkExtensions } from './extensions'
-import { checkControllerContainers, checkSourceContainers, checkRoads, removeDuplicateContainers } from './infrastructure'
+import { 
+    checkControllerContainers,
+    checkSourceContainers,
+    checkRoads,
+    removeDuplicateContainers,
+    checkDepot,
+} from './infrastructure'
 
 /**
  * get depot building running along with all energy gathering and storing using the depot
@@ -18,11 +24,9 @@ import { checkControllerContainers, checkSourceContainers, checkRoads, removeDup
 
     const room = _.values(Game.rooms)[0] as Room
 
-    // if (Game.time % 53) {
-    //     checkExtensions(room)
-    // }
-
-    
+    if (Game.time % 41 == 0) {
+        checkDepot(room)
+    }
 
     if (Game.time % 37 == 0) {
         removeDuplicateContainers(room)

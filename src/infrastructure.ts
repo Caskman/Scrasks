@@ -122,10 +122,9 @@ export function removeDuplicateContainers(room: Room) {
 }
 
 export function checkDepot(room: Room) {
-    // is there already a depot?
-    if (!ut.findDepot(room)) {
-        // no, should we build a depot?
-        // is there a construction site?
+    // sources have containers?
+    if (ut.sourcesHaveContainers(room)) {
+        // any depot construction sites?
         const spawn = ut.getRoomMainSpawn(room)
         const constructionSites = ut.getAreaSites(spawn.pos, 2)
             .filter(s => 
@@ -136,26 +135,29 @@ export function checkDepot(room: Room) {
                 ))
             .map(s => s.constructionSite)
         if (constructionSites.length == 0) {
-            // no construction sites
-            if (ut.sourcesHaveContainers(room)) {
-                // yes, build the depot
-                const location = pickDepotLocation(room)
-                // pick adjacent location for preliminary depot
-                const spawn = ut.getRoomMainSpawn(room)
-                const sites = ut.createAreaListFrom(location, 1)
-                const closestSites = sites
-                    // spots within 2 range of spawn
-                    .filter(s => spawn.pos.getRangeTo(s.x, s.y) == 2)
-                const containerLocation = closestSites[0]
-                room.createConstructionSite(
-                    containerLocation.x, containerLocation.y, 
-                    STRUCTURE_CONTAINER)
+            // no, which to build?
+            if (CONTROLLER_STRUCTURES[STRUCTURE_STORAGE][room.controller.level] == 0) {
+                // not high enough, container depot exists?
+                const depot = ut.findContainerDepot(room)
+                if (!depot) {
+                    // no depot, go build it
+                    const location = pickContainerDepotLocation(room)
+                    room.createConstructionSite(location.x, location.y, STRUCTURE_CONTAINER)
+                }
+            } else {
+                // high enough for storage
+                const depot = ut.findStorageDepot(room)
+                if (!depot) {
+                    // no depot, go build it
+                    const location = pickStorageDepotLocation(room)
+                    room.createConstructionSite(location.x, location.y, STRUCTURE_STORAGE)
+                }
             }
         }
     }
 }
 
-function pickDepotLocation(room: Room): RoomPosition {
+function pickStorageDepotLocation(room: Room): RoomPosition {
     const spawn = ut.getRoomMainSpawn(room)
     const sites = ut.createAreaListFrom(spawn.pos, 2)
     const ringSites = sites.filter(s => 
@@ -165,4 +167,16 @@ function pickDepotLocation(room: Room): RoomPosition {
         s => ut.manhattanDist(s.x, s.y, controlPos.x, controlPos.y))
     const location = closestToController[0]
     return room.getPositionAt(location.x, location.y)
+}
+
+function pickContainerDepotLocation(room: Room): RoomPosition {
+    const location = pickStorageDepotLocation(room)
+    // pick adjacent location for preliminary depot
+    const spawn = ut.getRoomMainSpawn(room)
+    const sites = ut.createAreaListFrom(location, 1)
+    const closestSites = sites
+        // spots within 2 range of spawn
+        .filter(s => spawn.pos.getRangeTo(s.x, s.y) == 2)
+    const containerLocation = closestSites[0]
+    return room.getPositionAt(containerLocation.x, containerLocation.y)
 }

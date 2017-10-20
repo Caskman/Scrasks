@@ -28,6 +28,9 @@ export function runHauler(c: Creep) {
     } else if (c.memory.job == consts.HAULER_TRANSPORT_JOB) {
         // job is transporting energy elsewhere
         runTransportJob(c)
+    } else if (c.memory.job == consts.HAULER_CUSTODIAN_JOB) {
+        // job is transporting energy elsewhere
+        runCustodianJob(c)
     } else {
         throw new Error("Hauler has no job")
     }
@@ -53,6 +56,14 @@ function runCollectJob(c: Creep) {
         // no, let's get some energy
         const source = Game.getObjectById(c.memory.targetID) as StructureContainer
         ut.moveAndWithdraw(c, source)
+    }
+}
+
+function runCustodianJob(c: Creep) {
+    if (c.memory.hauling) {
+        ut.storeInSpawn(c)
+    } else {
+        ut.getEnergyFromBase(c)
     }
 }
 
@@ -95,11 +106,10 @@ function getUnderstaffedHaulerJobs(room: Room) {
         })
     }
 
-    const depot = ut.findDepot(room)
-    if (depot) {
+    if (ut.depotExists(room)) {
         jobs.push({
             targetID: ut.getRoomMainSpawn(room).id,
-            job: consts.HAULER_TRANSPORT_JOB,
+            job: consts.HAULER_CUSTODIAN_JOB,
             creeps: [],
         })
     }
@@ -117,6 +127,10 @@ function getUnderstaffedHaulerJobs(room: Room) {
         || (
             j.job == consts.HAULER_TRANSPORT_JOB
                 && j.creeps.length < consts.HAULERS_PER_TRANSPORT_TARGET
+        )
+        || (
+            j.job == consts.HAULER_CUSTODIAN_JOB
+                && j.creeps.length < consts.HAULERS_PER_CUSTODIAN_TARGET
         )
     )
     return underStaffedJobs
